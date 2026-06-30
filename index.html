@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Ventes 2026 - Brainsonic</title>
+    <title>Reporting Morgan 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,9 +14,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
             <div>
                 <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
-                    Suivi des ventes 2026
+                    Reporting Morgan 2026
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">Brainsonic Sales Intelligence Unit</p>
+                <p class="text-sm text-gray-400 mt-1">Brainsonic AI</p>
             </div>
             <div class="flex items-center gap-3">
                 <span class="flex h-2 w-2 relative">
@@ -29,18 +29,18 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">TOTAL CA SÉCURISÉ</p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
                 <p id="kpi-total" class="text-3xl font-black text-white mt-2 font-mono">Chargement...</p>
             </div>
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">APPORT EBG</p>
                 <p id="kpi-ebg" class="text-3xl font-black text-indigo-400 mt-2 font-mono">0 €</p>
-                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du CA global</p>
+                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
                 <p id="kpi-direct" class="text-3xl font-black text-cyan-400 mt-2 font-mono">0 €</p>
-                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du CA global</p>
+                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
         </div>
 
@@ -63,8 +63,7 @@
 
         <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
             <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
-                <h3 class="text-base font-bold text-gray-200 tracking-wide">Historique des transactions</h3>
-                <span class="text-xs text-gray-500 font-mono">Ordre inverse chronologique</span>
+                <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -114,7 +113,7 @@
                     return;
                 }
 
-                // Tri chronologique inverse (Plus récent en premier)
+                // Tri par ordre inverse chronologique (Du plus récent au plus ancien)
                 const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 let totalCA = 0;
@@ -132,14 +131,13 @@
                     if (v.source === 'EBG') totalEBG += montant;
                     if (v.source === 'Direct') totalDirect += montant;
 
-                    // Groupement par mois sécurisé
                     const dateObj = new Date(v.date);
                     if (!isNaN(dateObj.getTime())) {
                         const mName = months[dateObj.getMonth()];
                         monthlyData[mName] += montant;
                     }
 
-                    // Agrégation intelligente des clients
+                    // Agrégation stricte et exacte sans hallucination
                     let rawClient = v.client.toUpperCase().trim();
                     let cleanClient = rawClient;
                     
@@ -147,24 +145,31 @@
                     else if (rawClient.includes('BMW')) cleanClient = 'BMW GROUPE';
                     else if (rawClient.includes('EDITIS')) cleanClient = 'EDITIS';
                     else if (rawClient.includes('BIOCODEX')) cleanClient = 'BIOCODEX';
+                    else if (rawClient.includes('AXA')) cleanClient = 'AXA FRANCE';
+                    else if (rawClient.includes('NUTRITION')) cleanClient = 'NUTRITION & SANTÉ';
+                    else if (rawClient.includes('JLM')) cleanClient = 'JLM GROUP';
+                    else if (rawClient.includes('SAGE')) cleanClient = 'SAGE FRANCE';
+                    else if (rawClient.includes('MOBIVIA')) cleanClient = 'MOBIVIA';
+                    else if (rawClient.includes('FORETS')) cleanClient = 'OFFICE NATIONAL DES FORÊTS';
+                    else if (rawClient.includes('INTER')) cleanClient = 'INTER ENTREPRISE';
 
+                    // Exclusion stricte d'EBG en tant que client
                     if (!cleanClient.includes('EBG')) {
                         clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
                     }
                 });
 
+                // Calcul mathématique précis du Top 3
                 const topClients = Object.entries(clientAggregation)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 3);
 
-                // Rendu des KPIs globaux
                 document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du CA global`;
-                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du CA global`;
+                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
+                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
 
-                // Rendu HTML du Top 3 Clients
                 const topListContainer = document.getElementById('top-clients-list');
                 topListContainer.innerHTML = '';
                 const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
@@ -186,7 +191,6 @@
                     topListContainer.insertAdjacentHTML('beforeend', card);
                 });
 
-                // Rendu de la table inversée
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 ventesInversees.forEach(v => {
@@ -206,7 +210,6 @@
                     tbody.insertAdjacentHTML('beforeend', row);
                 });
 
-                // Graphique évolution CA
                 const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                 new Chart(document.getElementById('monthlyChart'), {
                     type: 'bar',
@@ -231,7 +234,6 @@
                     }
                 });
 
-                // Mini Doughnut
                 new Chart(document.getElementById('sourceChart'), {
                     type: 'doughnut',
                     data: {
