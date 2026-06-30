@@ -1,20 +1,12 @@
-// Récupération des clés Supabase depuis l'URL ou à configurer directement
-// ASTUCE : On va demander à Vercel de nous injecter ça proprement plus tard.
-const SUPABASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'TON_URL_SUPABASE_PROD' 
-    : '__SUPABASE_URL__'; // Sera remplacé au déploiement
-const SUPABASE_KEY = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'TA_CLE_SUPABASE_PROD' 
-    : '__SUPABASE_KEY__';
+// Configuration Supabase
+const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
+const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
 
 // Initialisation du client Supabase
-// Remplacer directement par tes vraies clés ici pour le test rapide si tu veux :
-const supabaseUrl = 'METS_TON_URL_SUPABASE_ICI';
-const supabaseKey = 'METS_TA_CLE_ANON_SUPABASE_ICI';
-const supabase = supabase?.createClient ? supabase.createClient(supabaseUrl, supabaseKey) : null;
+const supabase = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
 
 async function fetchAndRenderDashboard() {
-    if (!supabase) return alert("Configure tes clés Supabase dans app.js !");
+    if (!supabase) return alert("Le SDK Supabase n'est pas chargé correctement.");
 
     // 1. Récupérer les données de la table "ventes"
     const { data: ventes, error } = await supabase
