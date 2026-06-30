@@ -3,75 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Ventes 2026</title>
-    <!-- Tailwind CSS -->
+    <title>Dashboard Ventes 2026 - Brainsonic</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased selection:bg-cyan-500 selection:text-white">
 
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8 border-b pb-4">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Suivi des ventes 2026</h1>
-                <p class="text-sm text-gray-500 mt-1">Agence : Brainsonic / Partenaire : EBG</p>
+                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
+                    Suivi des ventes 2026
+                </h1>
+                <p class="text-sm text-gray-400 mt-1">Brainsonic Sales Intelligence Unit</p>
             </div>
-            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Live Data</span>
+            <div class="flex items-center gap-3">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                </span>
+                <span class="bg-gray-800/80 text-cyan-400 text-xs font-mono px-3 py-1.5 rounded-md border border-gray-700">LIVE SYNCED</span>
+            </div>
         </div>
 
-        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-                <p class="text-sm font-medium text-gray-400 uppercase">TOTAL CA SÉCURISÉ</p>
-                <p id="kpi-total" class="text-3xl font-bold text-gray-900 mt-2">Chargement...</p>
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">TOTAL CA SÉCURISÉ</p>
+                <p id="kpi-total" class="text-3xl font-black text-white mt-2 font-mono">Chargement...</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-                <p class="text-sm font-medium text-gray-400 uppercase">DONT APPORT EBG</p>
-                <p id="kpi-ebg" class="text-3xl font-bold text-indigo-600 mt-2">0 €</p>
-                <p id="pct-ebg" class="text-xs text-gray-400 mt-1">0% du total</p>
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">APPORT EBG</p>
+                <p id="kpi-ebg" class="text-3xl font-black text-indigo-400 mt-2 font-mono">0 €</p>
+                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du CA global</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-                <p class="text-sm font-medium text-gray-400 uppercase">DONT DIRECT BRAINSONIC</p>
-                <p id="kpi-direct" class="text-3xl font-bold text-emerald-600 mt-2">0 €</p>
-                <p id="pct-direct" class="text-xs text-gray-400 mt-1">0% du total</p>
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
+                <p id="kpi-direct" class="text-3xl font-black text-cyan-400 mt-2 font-mono">0 €</p>
+                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du CA global</p>
             </div>
         </div>
 
-        <!-- Graphiques -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Évolution Mensuelle du CA (€ HT)</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
+                <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
                 <div class="h-64"><canvas id="monthlyChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des Sources</h3>
-                <div class="h-64 flex justify-center"><canvas id="sourceChart"></canvas></div>
+            
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-gray-200 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
+                </div>
+                <div id="top-clients-list" class="space-y-4 my-auto">
+                    </div>
+                <div class="h-24 mt-2 flex justify-center"><canvas id="sourceChart"></canvas></div>
             </div>
         </div>
 
-        <!-- Tableau des data -->
-        <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-800">Détail des transactions</h3>
+        <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
+                <h3 class="text-base font-bold text-gray-200 tracking-wide">Historique des transactions</h3>
+                <span class="text-xs text-gray-500 font-mono">Ordre inverse chronologique</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold">
-                            <th class="px-6 py-3">Date</th>
-                            <th class="px-6 py-3">Client</th>
-                            <th class="px-6 py-3">Description</th>
-                            <th class="px-6 py-3">Source</th>
-                            <th class="px-6 py-3 text-right">Montant</th>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase font-bold tracking-wider bg-gray-900/40">
+                            <th class="px-6 py-4">Date</th>
+                            <th class="px-6 py-4">Client</th>
+                            <th class="px-6 py-4">Description</th>
+                            <th class="px-6 py-4">Source</th>
+                            <th class="px-6 py-4 text-right">Montant</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm">
-                        <!-- Rempli en JS -->
-                    </tbody>
+                    <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -81,8 +88,11 @@
         const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
         const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
         
+        // Configuration globale pour le style des graphiques sombres
+        Chart.defaults.color = '#9CA3AF';
+        Chart.defaults.borderColor = 'rgba(156, 163, 175, 0.1)';
+
         async function fetchAndRenderDashboard() {
-            // Vérification de sécurité du chargement du script SDK
             if (!window.supabase || !window.supabase.createClient) {
                 document.getElementById('kpi-total').innerText = "Erreur SDK";
                 return;
@@ -91,14 +101,13 @@
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             try {
+                // Récupération globale
                 const { data: ventes, error } = await supabase
                     .from('ventes')
-                    .select('*')
-                    .order('date', { ascending: true });
+                    .select('*');
 
                 if (error) {
                     document.getElementById('kpi-total').innerText = "Erreur Base";
-                    console.error(error);
                     return;
                 }
 
@@ -107,10 +116,15 @@
                     return;
                 }
 
+                // 1. Tri chronologique inverse (Plus récent en premier) pour le tableau
+                const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // 2. Calculs généraux
                 let totalCA = 0;
                 let totalEBG = 0;
                 let totalDirect = 0;
                 const monthlyData = {};
+                const clientAggregation = {};
                 const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
                 ventes.forEach(v => {
@@ -120,71 +134,131 @@
                     if (v.source === 'EBG') totalEBG += montant;
                     if (v.source === 'Direct') totalDirect += montant;
 
+                    // Groupement par mois
                     const mIdx = new Date(v.date).getMonth();
                     const mName = months[mIdx];
                     monthlyData[mName] = (monthlyData[mName] || 0) + montant;
+
+                    // Agrégation par Client (Nettoyage du nom pour regrouper SEB / BMW)
+                    let rawClient = v.client.toUpperCase().trim();
+                    let cleanClient = rawClient;
+                    
+                    if (rawClient.includes('SEB')) cleanClient = 'GROUPE SEB';
+                    if (rawClient.includes('BMW')) cleanClient = 'BMW GROUPE';
+                    if (rawClient.includes('EDITIS')) cleanClient = 'EDITIS';
+                    if (rawClient.includes('BIOCODEX')) cleanClient = 'BIOCODEX';
+
+                    // On ignore complètement EBG GÉNÉRIQUE / DIVERS / VEILLE dans le classement client
+                    if (!cleanClient.includes('EBG')) {
+                        clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
+                    }
                 });
 
+                // Top 3 Clients
+                const topClients = Object.entries(clientAggregation)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+
+                // Rendu des KPIs
                 document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
-                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
+                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du CA global`;
+                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du CA global`;
 
+                // Rendu HTML du Top 3 Clients
+                const topListContainer = document.getElementById('top-clients-list');
+                topListContainer.innerHTML = '';
+                const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
+                
+                topClients.forEach((client, idx) => {
+                    const pctClient = ((client[1] / totalCA) * 100).toFixed(1);
+                    const card = `
+                        <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
+                                    <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">${pctClient}% du volume total</p>
+                            </div>
+                            <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
+                        </div>
+                    `;
+                    topListContainer.insertAdjacentHTML('beforeend', card);
+                });
+
+                // Rendu du Tableau (Ordre inverse chronologique)
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
-                ventes.forEach(v => {
+                ventesInversees.forEach(v => {
                     const row = `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-gray-500 whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
-                            <td class="px-6 py-4 font-medium text-gray-900">${v.client}</td>
-                            <td class="px-6 py-4 text-gray-500">${v.description}</td>
+                        <tr class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40">
+                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
+                            <td class="px-6 py-4 font-bold text-white">${v.client}</td>
+                            <td class="px-6 py-4 text-gray-400 font-medium">${v.description}</td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-md ${v.source === 'EBG' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'}">
+                                <span class="px-2.5 py-1 text-xs font-bold rounded-md ${v.source === 'EBG' ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-800/50' : 'bg-cyan-950/60 text-cyan-400 border border-cyan-800/50'}">
                                     ${v.source}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right font-semibold text-gray-950">${parseFloat(v.montant).toLocaleString('fr-FR')} €</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant).toLocaleString('fr-FR')} €</td>
                         </tr>
                     `;
                     tbody.insertAdjacentHTML('beforeend', row);
                 });
 
+                // Graphique en Barres (Evolution)
                 new Chart(document.getElementById('monthlyChart'), {
                     type: 'bar',
                     data: {
-                        labels: Object.keys(monthlyData),
+                        labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'],
                         datasets: [{
-                            label: 'Ventes mensuelles (€)',
-                            data: Object.values(monthlyData),
-                            backgroundColor: '#4f46e5',
+                            label: 'Chiffre d''Affaires (€)',
+                            data: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'].map(m => monthlyData[m] || 0),
+                            backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                            hoverBackgroundColor: '#06b6d4',
                             borderRadius: 6
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: 'rgba(156, 163, 175, 0.05)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
                 });
 
+                // Mini Doughnut en bas à droite
                 new Chart(document.getElementById('sourceChart'), {
                     type: 'doughnut',
                     data: {
                         labels: ['EBG', 'Direct'],
                         datasets: [{
                             data: [totalEBG, totalDirect],
-                            backgroundColor: ['#4f46e5', '#10b981']
+                            backgroundColor: ['rgba(99, 102, 241, 0.85)', 'rgba(6, 182, 212, 0.85)'],
+                            borderWidth: 0
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        cutout: '75%'
+                    }
                 });
 
             } catch (err) {
-                document.getElementById('kpi-total').innerText = "Erreur Script";
+                document.getElementById('kpi-total').innerText = "Erreur globale";
                 console.error(err);
             }
         }
 
-        // Exécution sécurisée après chargement complet de la fenêtre et des dépendances externes
         window.addEventListener('load', () => {
-            setTimeout(fetchAndRenderDashboard, 300);
+            setTimeout(fetchAndRenderDashboard, 200);
         });
     </script>
 </body>
