@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Ventes 2026</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
     <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
         <div class="flex justify-between items-center mb-8 border-b pb-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Suivi des ventes 2026</h1>
@@ -19,6 +23,7 @@
             <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Live Data</span>
         </div>
 
+        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
                 <p class="text-sm font-medium text-gray-400 uppercase">TOTAL CA SÉCURISÉ</p>
@@ -36,6 +41,7 @@
             </div>
         </div>
 
+        <!-- Graphiques -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Évolution Mensuelle du CA (€ HT)</h3>
@@ -47,6 +53,7 @@
             </div>
         </div>
 
+        <!-- Tableau des data -->
         <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-800">Détail des transactions</h3>
@@ -63,7 +70,8 @@
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-100 text-sm">
-                        </tbody>
+                        <!-- Rempli en JS -->
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -73,9 +81,15 @@
         const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
         const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
         async function fetchAndRenderDashboard() {
+            // Vérification de sécurité du chargement du script SDK
+            if (!window.supabase || !window.supabase.createClient) {
+                document.getElementById('kpi-total').innerText = "Erreur SDK";
+                return;
+            }
+
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
             try {
                 const { data: ventes, error } = await supabase
                     .from('ventes')
@@ -83,13 +97,13 @@
                     .order('date', { ascending: true });
 
                 if (error) {
-                    document.getElementById('kpi-total').innerText = "Erreur Supabase";
-                    console.error("Erreur détaillée :", error);
+                    document.getElementById('kpi-total').innerText = "Erreur Base";
+                    console.error(error);
                     return;
                 }
 
                 if (!ventes || ventes.length === 0) {
-                    document.getElementById('kpi-total').innerText = "Table vide";
+                    document.getElementById('kpi-total').innerText = "Aucune vente";
                     return;
                 }
 
@@ -163,12 +177,15 @@
                 });
 
             } catch (err) {
-                document.getElementById('kpi-total').innerText = "Erreur script";
-                console.error("Erreur script :", err);
+                document.getElementById('kpi-total').innerText = "Erreur Script";
+                console.error(err);
             }
         }
 
-        window.onload = fetchAndRenderDashboard;
+        // Exécution sécurisée après chargement complet de la fenêtre et des dépendances externes
+        window.addEventListener('load', () => {
+            setTimeout(fetchAndRenderDashboard, 300);
+        });
     </script>
 </body>
 </html>
