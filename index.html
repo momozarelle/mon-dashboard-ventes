@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Ventes 2026</title>
+    <!-- Tailwind CSS pour le design -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Suivi des ventes 2026</h1>
+                <p class="text-sm text-gray-500 mt-1">Agence : Brainsonic / Partenaire : EBG</p>
+            </div>
+            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Live Data</span>
+        </div>
+
+        <!-- KPIs Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                <p class="text-sm font-medium text-gray-400 uppercase">TOTAL CA SÉCURISÉ</p>
+                <p id="kpi-total" class="text-3xl font-bold text-gray-900 mt-2">0 €</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                <p class="text-sm font-medium text-gray-400 uppercase">DONT APPORT EBG</p>
+                <p id="kpi-ebg" class="text-3xl font-bold text-indigo-600 mt-2">0 €</p>
+                <p id="pct-ebg" class="text-xs text-gray-400 mt-1">0% du total</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                <p class="text-sm font-medium text-gray-400 uppercase">DONT DIRECT BRAINSONIC</p>
+                <p id="kpi-direct" class="text-3xl font-bold text-emerald-600 mt-2">0 €</p>
+                <p id="pct-direct" class="text-xs text-gray-400 mt-1">0% du total</p>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Évolution Mensuelle du CA (€ HT)</h3>
+                <div class="h-64"><canvas id="monthlyChart"></canvas></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des Sources</h3>
+                <div class="h-64 flex justify-center"><canvas id="sourceChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Tableau des data -->
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Détail des transactions</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold">
+                            <th class="px-6 py-3">Date</th>
+                            <th class="px-6 py-3">Client</th>
+                            <th class="px-6 py-3">Description</th>
+                            <th class="px-6 py-3">Source</th>
+                            <th class="px-6 py-3 text-right">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm">
+                        <!-- Rempli par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de l'application -->
+    <script src="app.js"></script>
+</body>
+</html>
