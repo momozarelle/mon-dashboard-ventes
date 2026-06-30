@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Morgan 2026</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased selection:bg-cyan-500 selection:text-white">
 
     <div class="max-w-7xl mx-auto px-6 py-10">
+        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
             <div>
                 <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
@@ -27,6 +31,7 @@
             </div>
         </div>
 
+        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
@@ -44,23 +49,28 @@
             </div>
         </div>
 
+        <!-- Section Graphiques & Top Clients -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Évolution Mensuelle -->
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
                 <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
                 <div class="h-64"><canvas id="monthlyChart"></canvas></div>
             </div>
             
+            <!-- Top Clients Séquence -->
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 flex flex-col justify-between">
                 <div>
                     <h3 class="text-base font-bold text-gray-200 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
                     <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
                 </div>
                 <div id="top-clients-list" class="space-y-4 my-auto">
-                    </div>
-                <div class="h-24 mt-2 flex justify-center"><canvas id="sourceChart"></canvas></div>
+                    <!-- Rempli en JS -->
+                </div>
+                <div></div> <!-- Spacer pour compenser le retrait du graphique rond -->
             </div>
         </div>
 
+        <!-- Tableau des data -->
         <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
             <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
                 <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
@@ -72,12 +82,14 @@
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
                             <th class="px-6 py-4">Description</th>
+                            <th class="px-6 py-4">Furious</th>
                             <th class="px-6 py-4">Source</th>
                             <th class="px-6 py-4 text-right">Montant</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
-                        </tbody>
+                        <!-- Rempli en JS -->
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -137,7 +149,7 @@
                         monthlyData[mName] += montant;
                     }
 
-                    // Agrégation stricte et exacte sans hallucination
+                    // Agrégation mathématique stricte
                     let rawClient = v.client.toUpperCase().trim();
                     let cleanClient = rawClient;
                     
@@ -153,13 +165,11 @@
                     else if (rawClient.includes('FORETS')) cleanClient = 'OFFICE NATIONAL DES FORÊTS';
                     else if (rawClient.includes('INTER')) cleanClient = 'INTER ENTREPRISE';
 
-                    // Exclusion stricte d'EBG en tant que client
                     if (!cleanClient.includes('EBG')) {
                         clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
                     }
                 });
 
-                // Calcul mathématique précis du Top 3
                 const topClients = Object.entries(clientAggregation)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 3);
@@ -191,14 +201,23 @@
                     topListContainer.insertAdjacentHTML('beforeend', card);
                 });
 
+                // Génération du tableau avec la colonne Furious (déduite de la structure de données)
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 ventesInversees.forEach(v => {
+                    // Construction dynamique de la clé Furious si elle n'existe pas en colonne brute
+                    let formattedDate = new Date(v.date).toISOString().slice(0,10).replace(/-/g,'');
+                    let cleanClientSlug = v.client.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+                    let cleanDescSlug = v.description.toLowerCase().trim().slice(0, 20).replace(/[^a-z0-9]/g, '-');
+                    let furiousFallback = `${v.source}-${formattedDate}-${cleanClientSlug}-${cleanDescSlug}`;
+                    let furiousCode = v.furious || v.num_affaire || furiousFallback;
+
                     const row = `
                         <tr class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40">
                             <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
                             <td class="px-6 py-4 font-bold text-white">${v.client}</td>
                             <td class="px-6 py-4 text-gray-400 font-medium">${v.description}</td>
+                            <td class="px-6 py-4 text-gray-500 font-mono text-xs max-w-xs truncate" title="${furiousCode}">${furiousCode}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2.5 py-1 text-xs font-bold rounded-md ${v.source === 'EBG' ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-800/50' : 'bg-cyan-950/60 text-cyan-400 border border-cyan-800/50'}">
                                     ${v.source}
@@ -231,24 +250,6 @@
                             y: { grid: { color: 'rgba(156, 163, 175, 0.05)' } },
                             x: { grid: { display: false } }
                         }
-                    }
-                });
-
-                new Chart(document.getElementById('sourceChart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['EBG', 'Direct'],
-                        datasets: [{
-                            data: [totalEBG, totalDirect],
-                            backgroundColor: ['rgba(99, 102, 241, 0.85)', 'rgba(6, 182, 212, 0.85)'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        cutout: '75%'
                     }
                 });
 
