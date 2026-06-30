@@ -88,7 +88,6 @@
         const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
         const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
         
-        // Configuration globale pour le style des graphiques sombres
         Chart.defaults.color = '#9CA3AF';
         Chart.defaults.borderColor = 'rgba(156, 163, 175, 0.1)';
 
@@ -101,7 +100,6 @@
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             try {
-                // Récupération globale
                 const { data: ventes, error } = await supabase
                     .from('ventes')
                     .select('*');
@@ -116,16 +114,16 @@
                     return;
                 }
 
-                // 1. Tri chronologique inverse (Plus récent en premier) pour le tableau
+                // Tri chronologique inverse (Plus récent en premier)
                 const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                // 2. Calculs généraux
                 let totalCA = 0;
                 let totalEBG = 0;
                 let totalDirect = 0;
-                const monthlyData = {};
-                const clientAggregation = {};
+                
                 const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
+                const clientAggregation = {};
 
                 ventes.forEach(v => {
                     const montant = parseFloat(v.montant);
@@ -134,32 +132,32 @@
                     if (v.source === 'EBG') totalEBG += montant;
                     if (v.source === 'Direct') totalDirect += montant;
 
-                    // Groupement par mois
-                    const mIdx = new Date(v.date).getMonth();
-                    const mName = months[mIdx];
-                    monthlyData[mName] = (monthlyData[mName] || 0) + montant;
+                    // Groupement par mois sécurisé
+                    const dateObj = new Date(v.date);
+                    if (!isNaN(dateObj.getTime())) {
+                        const mName = months[dateObj.getMonth()];
+                        monthlyData[mName] += montant;
+                    }
 
-                    // Agrégation par Client (Nettoyage du nom pour regrouper SEB / BMW)
+                    // Agrégation intelligente des clients
                     let rawClient = v.client.toUpperCase().trim();
                     let cleanClient = rawClient;
                     
                     if (rawClient.includes('SEB')) cleanClient = 'GROUPE SEB';
-                    if (rawClient.includes('BMW')) cleanClient = 'BMW GROUPE';
-                    if (rawClient.includes('EDITIS')) cleanClient = 'EDITIS';
-                    if (rawClient.includes('BIOCODEX')) cleanClient = 'BIOCODEX';
+                    else if (rawClient.includes('BMW')) cleanClient = 'BMW GROUPE';
+                    else if (rawClient.includes('EDITIS')) cleanClient = 'EDITIS';
+                    else if (rawClient.includes('BIOCODEX')) cleanClient = 'BIOCODEX';
 
-                    // On ignore complètement EBG GÉNÉRIQUE / DIVERS / VEILLE dans le classement client
                     if (!cleanClient.includes('EBG')) {
                         clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
                     }
                 });
 
-                // Top 3 Clients
                 const topClients = Object.entries(clientAggregation)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 3);
 
-                // Rendu des KPIs
+                // Rendu des KPIs globaux
                 document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
                 document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
@@ -180,7 +178,7 @@
                                     <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
                                     <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-0.5">${pctClient}% du volume total</p>
+                                <p class="text-xs text-gray-500 mt-0.5">${pctClient}% du CA total</p>
                             </div>
                             <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
                         </div>
@@ -188,7 +186,7 @@
                     topListContainer.insertAdjacentHTML('beforeend', card);
                 });
 
-                // Rendu du Tableau (Ordre inverse chronologique)
+                // Rendu de la table inversée
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 ventesInversees.forEach(v => {
@@ -208,14 +206,15 @@
                     tbody.insertAdjacentHTML('beforeend', row);
                 });
 
-                // Graphique en Barres (Evolution)
+                // Graphique évolution CA
+                const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                 new Chart(document.getElementById('monthlyChart'), {
                     type: 'bar',
                     data: {
-                        labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'],
+                        labels: activeMonths,
                         datasets: [{
-                            label: 'Chiffre d''Affaires (€)',
-                            data: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'].map(m => monthlyData[m] || 0),
+                            label: 'CA (€)',
+                            data: activeMonths.map(m => monthlyData[m]),
                             backgroundColor: 'rgba(6, 182, 212, 0.85)',
                             hoverBackgroundColor: '#06b6d4',
                             borderRadius: 6
@@ -232,7 +231,7 @@
                     }
                 });
 
-                // Mini Doughnut en bas à droite
+                // Mini Doughnut
                 new Chart(document.getElementById('sourceChart'), {
                     type: 'doughnut',
                     data: {
@@ -252,13 +251,13 @@
                 });
 
             } catch (err) {
-                document.getElementById('kpi-total').innerText = "Erreur globale";
+                document.getElementById('kpi-total').innerText = "Erreur execution";
                 console.error(err);
             }
         }
 
         window.addEventListener('load', () => {
-            setTimeout(fetchAndRenderDashboard, 200);
+            setTimeout(fetchAndRenderDashboard, 150);
         });
     </script>
 </body>
