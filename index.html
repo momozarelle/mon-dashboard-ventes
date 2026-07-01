@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Morgan reporting</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/dist/umd/supabase.js"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-box; }
         h1 { font-size: 20px; margin-bottom: 20px; color: #fff; text-align: center; }
-        .password-container { position: relative; width: 100%; margin-bottom: 15px; }
+        .password-container { position: relative; width: 100%; margin-bottom: 15px; display: flex; align-items: center; }
         input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
-        .password-container input { margin-bottom: 0; padding-right: 40px; }
-        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 18px; user-select: none; }
+        .password-container input { margin-bottom: 0; padding-right: 45px; }
+        .toggle-password { position: absolute; right: 12px; cursor: pointer; color: #888; font-size: 18px; user-select: none; z-index: 10; }
         button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         button:hover { background: #34b27b; }
         .hidden { display: none; }
@@ -44,16 +44,25 @@
         const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        // Sécurité : Remplace la valeur ci-dessous par ton mot de passe secret
-        const SECRET_PASSWORD = "Ytqywa613%%"; 
+        // Sécurité : Remplace bien la valeur ci-dessous par ton vrai mot de passe
+        const SECRET_PASSWORD = "TON_MOT_DE_PASSE_ICI"; 
 
-        // Initialisation corrigée du client Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient;
 
-        // Fonction pour basculer la visibilité du mot de passe (œil)
+        // On attend que la page et les scripts soient chargés à 100%
+        window.addEventListener('load', () => {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.error("Erreur de chargement de la bibliothèque Supabase.");
+            }
+        });
+
+        // Fonction œil qui bascule le type du champ et change l'icône
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password-input');
             const toggleIcon = document.querySelector('.toggle-password');
+            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.innerText = '🙈';
@@ -63,18 +72,20 @@
             }
         }
 
+        // Vérification stricte du mot de passe
         function checkPassword() {
             const input = document.getElementById('password-input').value;
             const errorDiv = document.getElementById('login-error');
             
             if (input === SECRET_PASSWORD) {
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
+                document.getElementById('dashboard-screen').classList.remove('remove', 'hidden'); // Nettoyage propre
             } else {
                 errorDiv.classList.remove('hidden');
             }
         }
 
+        // Envoi des données vers la table Supabase
         async function sendToSupabase() {
             const markdownText = document.getElementById('markdown-input').value;
             const btn = document.getElementById('submit-btn');
@@ -84,10 +95,15 @@
                 return;
             }
 
+            if (!supabaseClient) {
+                showStatus("Erreur : Connexion à Supabase impossible.", "error");
+                return;
+            }
+
             btn.disabled = true;
             btn.innerText = "Envoi en cours...";
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('mes_notes')
                 .insert([{ contenu: markdownText }]);
 
