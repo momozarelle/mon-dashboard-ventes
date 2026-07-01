@@ -7,24 +7,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/dist/umd/supabase.js"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 600px; box-sizing: border-box; }
-        h1 { font-size: 22px; margin-bottom: 20px; color: #fff; text-align: center; }
-        h2 { font-size: 16px; margin-top: 25px; margin-bottom: 10px; color: #3ecf8e; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 700px; box-sizing: border-box; position: relative; }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1 { font-size: 22px; color: #fff; margin: 0; }
+        h2 { font-size: 16px; margin-top: 0; margin-bottom: 15px; color: #3ecf8e; }
+        
         .password-container { position: relative; width: 100%; margin-bottom: 15px; display: flex; align-items: center; }
         input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
         .password-container input { margin-bottom: 0; padding-right: 45px; }
         .toggle-password { position: absolute; right: 12px; cursor: pointer; color: #888; font-size: 18px; user-select: none; z-index: 10; }
+        
+        /* Boutons spécifiques */
         button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 5px; }
         button:hover { background: #34b27b; }
+        .btn-action { width: auto; padding: 10px 15px; margin: 0; font-size: 13px; }
+        .btn-secondary { background: #333; color: #ccc; }
+        .btn-secondary:hover { background: #444; }
+        
         .hidden { display: none !important; }
         .status { font-size: 14px; margin-top: 10px; text-align: center; padding: 8px; border-radius: 4px; }
         .success { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); }
         .error { color: #f25c54; background: rgba(242, 92, 84, 0.1); }
         
-        /* Style de la liste des entrées de reporting */
-        .entries-list { max-height: 250px; overflow-y: auto; margin-top: 10px; padding-right: 5px; }
-        .entry-item { background: #252525; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #3ecf8e; font-size: 13px; white-space: pre-wrap; }
-        .entry-date { color: #888; font-size: 11px; margin-bottom: 5px; }
+        /* Tableau d'affichage du Dashboard */
+        .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; }
+        th { background: #252525; color: #3ecf8e; font-weight: bold; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .empty-msg { color: #888; text-align: center; padding: 20px; font-size: 13px; }
+        
+        /* Formulaire */
+        .form-group { margin-bottom: 5px; }
+        .form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -40,42 +56,79 @@
     </div>
 
     <div id="dashboard-screen" class="card hidden">
-        <h1>Dashboard Morgan reporting</h1>
-        
-        <h2>Nouvelle entrée (Rapport de formation)</h2>
-        <textarea id="markdown-input" rows="6" placeholder="Collez le texte brut ou le Markdown ici..."></textarea>
-        <button id="submit-btn" onclick="sendToSupabase()">Pousser dans Supabase</button>
-        <div id="status-message" class="status hidden"></div>
-
-        <h2>Historique des entrées en direct</h2>
-        <div id="entries-container" class="entries-list">
-            <div style="color:#888; text-align:center; font-size:13px;">Chargement du flux...</div>
+        <div class="header-container">
+            <h1>Dashboard Morgan reporting</h1>
+            <button class="btn-action" onclick="goToForm()">Push Supabase</button>
         </div>
+        
+        <h2>Historique des entrées en direct</h2>
+        <div class="table-container">
+            <table id="reporting-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Affaire Furious</th>
+                        <th>Tarif (€)</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="4" class="empty-msg">Chargement du flux...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="form-screen" class="card hidden">
+        <div class="header-container">
+            <h1>Nouvelle Entrée</h1>
+            <button class="btn-action btn-secondary" onclick="goToDashboard()">Retour au dashboard</button>
+        </div>
+
+        <div class="form-group">
+            <label for="form-date">Date de la formation</label>
+            <input type="date" id="form-date">
+        </div>
+
+        <div class="form-group">
+            <label for="form-client">Nom du Client</label>
+            <input type="text" id="form-client" placeholder="Ex: BMW, SEB...">
+        </div>
+
+        <div class="form-group">
+            <label for="form-furious">Nom de l'affaire Furious</label>
+            <input type="text" id="form-furious" placeholder="Ex: F_2026_IA_01">
+        </div>
+
+        <div class="form-group">
+            <label for="form-tarif">Tarif (€)</label>
+            <input type="number" id="form-tarif" placeholder="Ex: 5000">
+        </div>
+
+        <button id="submit-btn" onclick="sendToSupabase()">Valider et ajouter l'entrée</button>
+        <div id="status-message" class="status hidden"></div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        // SÉCURITÉ : Remplace la valeur ci-dessous par ton mot de passe d'accès
+        // SÉCURITÉ : Renseigne ton mot de passe ici
         const SECRET_PASSWORD = "Ytqywa613%%"; 
 
         let supabaseClient;
 
-        // Initialisation propre au chargement
         window.addEventListener('load', () => {
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                console.error("Erreur critique : Bibliothèque Supabase introuvable.");
             }
         });
 
-        // Gestion de l'affichage du mot de passe (œil)
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password-input');
             const toggleIcon = document.querySelector('.toggle-password');
-            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.innerText = '🙈';
@@ -85,94 +138,111 @@
             }
         }
 
-        // Connexion et redirection vers le dashboard
         function checkPassword() {
             const input = document.getElementById('password-input').value;
-            const errorDiv = document.getElementById('login-error');
-            
             if (input === SECRET_PASSWORD) {
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                // Dès qu'on est connecté, on charge le dashboard avec l'historique
-                fetchEntries();
+                goToDashboard();
             } else {
-                errorDiv.classList.remove('hidden');
+                document.getElementById('login-error').classList.remove('hidden');
             }
         }
 
-        // Récupérer et afficher les données stockées dans Supabase
+        // Navigation : Vers l'accueil Dashboard
+        function goToDashboard() {
+            document.getElementById('form-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            fetchEntries();
+        }
+
+        // Navigation : Vers le Formulaire
+        function goToForm() {
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('form-screen').classList.remove('hidden');
+            document.getElementById('status-message').classList.add('hidden');
+            // Pré-remplir la date du jour par défaut
+            document.getElementById('form-date').valueAsDate = new Date();
+        }
+
+        // Récupérer et afficher les lignes structurées
         async function fetchEntries() {
-            const container = document.getElementById('entries-container');
-            
+            const tbody = document.getElementById('table-body');
             if (!supabaseClient) return;
 
-            // On trie par id décroissant pour avoir le plus récent en premier
             const { data, error } = await supabaseClient
                 .from('mes_notes')
-                .select('created_at, contenu')
+                .select('date_formation, client, nom_affaire_furious, tarif')
                 .order('id', { ascending: false });
 
             if (error) {
-                container.innerHTML = `<div style="color:#f25c54; font-size:13px;">Erreur de flux : ${error.message}</div>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="color:#f25c54;">Erreur : ${error.message}</td></tr>`;
                 return;
             }
 
             if (data.length === 0) {
-                container.innerHTML = `<div style="color:#888; text-align:center; font-size:13px;">Aucun reporting pour le moment.</div>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Aucun reporting enregistré.</td></tr>`;
                 return;
             }
 
-            // Génération de la liste HTML dynamique
-            container.innerHTML = data.map(item => {
-                const dateClean = new Date(item.created_at).toLocaleString('fr-FR');
+            tbody.innerHTML = data.map(item => {
+                const dateClean = item.date_formation ? new Date(item.date_formation).toLocaleDateString('fr-FR') : 'Non définie';
+                const formatTarif = item.tarif ? Number(item.tarif).toLocaleString('fr-FR') + ' €' : '0 €';
                 return `
-                    <div class="entry-item">
-                        <div class="entry-date">Le ${dateClean}</div>
-                        <div>${escapeHtml(item.contenu)}</div>
-                    </div>
+                    <tr>
+                        <td>${dateClean}</td>
+                        <td><strong>${escapeHtml(item.client || '')}</strong></td>
+                        <td>${escapeHtml(item.nom_affaire_furious || '')}</td>
+                        <td style="color: #3ecf8e; font-weight: bold;">${formatTarif}</td>
+                    </tr>
                 `;
             }).join('');
         }
 
-        // Envoyer la donnée et mettre à jour le dashboard directement
+        // Envoyer le formulaire structuré à Supabase
         async function sendToSupabase() {
-            const markdownText = document.getElementById('markdown-input').value;
+            const dateVal = document.getElementById('form-date').value;
+            const clientVal = document.getElementById('form-client').value;
+            const furiousVal = document.getElementById('form-furious').value;
+            const tarifVal = document.getElementById('form-tarif').value;
             const btn = document.getElementById('submit-btn');
 
-            if (!markdownText.trim()) {
-                showStatus("Le champ est vide. Ajoute du texte avant d'envoyer.", "error");
+            if (!clientVal.trim() || !tarifVal.trim()) {
+                showStatus("Les champs 'Client' et 'Tarif' sont obligatoires.", "error");
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "Envoi en cours...";
+            btn.innerText = "Ajout en cours...";
 
+            // Insertion des données structurées, la colonne 'contenu' garde une trace de secours
             const { data, error } = await supabaseClient
                 .from('mes_notes')
-                .insert([{ contenu: markdownText }]);
+                .insert([{ 
+                    date_formation: dateVal,
+                    client: clientVal,
+                    nom_affaire_furious: furiousVal,
+                    tarif: parseFloat(tarifVal),
+                    contenu: `${clientVal} - ${furiousVal} : ${tarifVal}€`
+                }]);
 
             btn.disabled = false;
-            btn.innerText = "Pousser dans Supabase";
+            btn.innerText = "Valider et ajouter l'entrée";
 
             if (error) {
-                showStatus("Erreur : " + error.message, "error");
+                showStatus("Erreur d'insertion : " + error.message, "error");
             } else {
-                showStatus("Données envoyées avec succès !", "success");
-                document.getElementById('markdown-input').value = ""; // Vide le champ
-                
-                // ACTION COMPLÈTE ET DIRECTE : On recharge immédiatement le flux visuel
-                fetchEntries();
+                showStatus("Données ajoutées avec succès !", "success");
+                // Nettoyage du formulaire pour la prochaine saisie
+                document.getElementById('form-client').value = "";
+                document.getElementById('form-furious').value = "";
+                document.getElementById('form-tarif').value = "";
             }
         }
 
-        // Sécurisation du texte injecté
         function escapeHtml(text) {
             return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function showStatus(msg, type) {
