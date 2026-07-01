@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <!-- KPIs Cards Harmonisés -->
+        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA Morgan</p>
@@ -70,20 +70,20 @@
             </div>
         </div>
 
-        <!-- Section Graphiques & Top Clients -->
+        <!-- Section Graphiques & Top 3 Podium Chart -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs lg:col-span-2">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
+                <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
                 <div class="h-64"><canvas id="monthlyChart"></canvas></div>
             </div>
             
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-800 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
-                    <p class="text-xs text-gray-400 mb-4">Hors apporteur d'affaires EBG</p>
+                    <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
                 </div>
-                <div id="top-clients-list" class="space-y-3 my-auto w-full">
-                    <!-- Rempli en JS -->
+                <!-- Graphique Podium Dédié -->
+                <div class="h-64 relative w-full">
+                    <canvas id="topClientsPodiumChart"></canvas>
                 </div>
                 <div></div>
             </div>
@@ -93,19 +93,20 @@
         <div class="bg-white rounded-2xl border border-gray-200/60 overflow-hidden shadow-xs">
             <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50/50 gap-4">
                 <div class="flex items-center gap-3">
-                    <h3 class="text-sm font-semibold text-gray-800 tracking-wide">Détail affaires</h3>
-                    <button id="btn-toggle-search" class="text-gray-400 hover:text-gray-900 text-sm transition-colors cursor-pointer" title="Rechercher une affaire">🔍</button>
+                    <h3 class="text-sm font-bold text-gray-900 tracking-wide">Détail affaires</h3>
                 </div>
-                <div id="search-container" class="hidden w-full sm:w-64 transition-all duration-300">
-                    <input type="text" id="table-search" placeholder="Filtrer par client, furious..." 
-                           class="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs">
+                <!-- Barre "Rechercher" Épurée ChatGPT style -->
+                <div class="relative w-full sm:w-72">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
+                    <input type="text" id="table-search" placeholder="Rechercher (client, furious, description...)" 
+                           class="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs transition-all">
                 </div>
-                <p id="search-hint" class="text-xs text-gray-400 sm:ml-auto">Cliquez sur une ligne pour la modifier ou l'effacer</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-200 text-gray-400 text-xs uppercase font-medium tracking-wider bg-gray-50/70">
+                        <!-- En-tête text-gray-950 pour forcer les titres en noir opaque -->
+                        <tr class="border-b border-gray-200 text-gray-950 text-xs uppercase font-bold tracking-wider bg-gray-50/70">
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
                             <th class="px-6 py-4 text-right">Tarif</th>
@@ -185,6 +186,7 @@
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
             let chartInstance = null;
+            let podiumChartInstance = null;
             let globalVentes = [];
 
             const screenAuth = document.getElementById('screen-auth');
@@ -194,8 +196,6 @@
             const togglePwdBtn = document.getElementById('btn-toggle-pwd');
             const authForm = document.getElementById('auth-form');
             const authError = document.getElementById('auth-error');
-
-            const searchContainer = document.getElementById('search-container');
             const searchInput = document.getElementById('table-search');
 
             function showScreen(screenId) {
@@ -237,17 +237,6 @@
                 localStorage.removeItem('morgan_authenticated');
                 passwordInput.value = '';
                 showScreen('screen-auth');
-            });
-
-            document.getElementById('btn-toggle-search').addEventListener('click', () => {
-                if (searchContainer.classList.contains('hidden')) {
-                    searchContainer.classList.remove('hidden');
-                    searchInput.focus();
-                } else {
-                    searchContainer.classList.add('hidden');
-                    searchInput.value = '';
-                    renderTableRows(globalVentes);
-                }
             });
 
             searchInput.addEventListener('input', () => {
@@ -386,7 +375,7 @@
 
                         if (v.client) {
                             let cleanClient = v.client.trim();
-                            if (cleanClient && !cleanClient.toUpperCase().includes('EBG')) {
+                            if (cleanClient) {
                                 clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + valMontant;
                             }
                         }
@@ -398,22 +387,28 @@
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
 
-                    const topClients = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
-                    const topList = document.getElementById('top-clients-list');
-                    topList.innerHTML = '';
-                    const colors = ['bg-gradient-to-r from-gray-900 to-gray-800 text-white', 'bg-gray-100 text-gray-800', 'bg-gray-50 text-gray-600'];
+                    // Préparation des données Podium : Ordre classique #2, #1, #3
+                    const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
                     
-                    topClients.forEach((client, idx) => {
-                        topList.insertAdjacentHTML('beforeend', `
-                            <div class="${colors[idx]} p-3.5 rounded-xl border border-gray-200/40 flex justify-between items-center shadow-2xs">
-                                <p class="text-sm font-medium tracking-wide">${client[0]}</p>
-                                <p class="text-sm font-mono font-bold">${client[1].toLocaleString('fr-FR')} €</p>
-                            </div>
-                        `);
-                    });
+                    let podiumLabels = ['-', '-', '-'];
+                    let podiumData = [0, 0, 0];
+                    
+                    if (topClientsSorted[0]) { // #1
+                        podiumLabels[1] = '#1 ' + topClientsSorted[0][0];
+                        podiumData[1] = topClientsSorted[0][1];
+                    }
+                    if (topClientsSorted[1]) { // #2
+                        podiumLabels[0] = '#2 ' + topClientsSorted[1][0];
+                        podiumData[0] = topClientsSorted[1][1];
+                    }
+                    if (topClientsSorted[2]) { // #3
+                        podiumLabels[2] = '#3 ' + topClientsSorted[2][0];
+                        podiumData[2] = topClientsSorted[2][1];
+                    }
 
                     renderTableRows(globalVentes);
 
+                    // 1. Rendu Histogramme d'Évolution Mensuelle
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
@@ -421,10 +416,11 @@
                         data: {
                             labels: activeMonths,
                             datasets: [{
+                                label: 'CA (€)',
                                 data: activeMonths.map(m => monthlyData[m]),
                                 backgroundColor: '#10B981',
                                 hoverBackgroundColor: '#059669',
-                                borderRadius: 4
+                                borderRadius: 6
                             }]
                         },
                         options: { 
@@ -433,9 +429,65 @@
                             plugins: { legend: { display: false } },
                             scales: {
                                 y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
-                                x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
+                                x: { grid: { display: false } }
                             }
                         }
+                    });
+
+                    // 2. Rendu Histogramme Podium (Avec valeurs chiffrées au-dessus)
+                    if (podiumChartInstance) podiumChartInstance.destroy();
+                    
+                    // Plugin pour injecter les prix au-dessus des barres du podium
+                    const chartLabelsPlugin = {
+                        id: 'chartLabelsPlugin',
+                        afterDatasetsDraw(chart) {
+                            const { ctx, data } = chart;
+                            ctx.save();
+                            ctx.font = 'bold 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+                            ctx.fillStyle = '#1F2937';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+
+                            chart.metasets[0].data.forEach((bar, index) => {
+                                const value = data.datasets[0].data[index];
+                                if (value > 0) {
+                                    ctx.fillText(`${value.toLocaleString('fr-FR')} €`, bar.x, bar.y - 6);
+                                }
+                            });
+                            ctx.restore();
+                        }
+                    };
+
+                    podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: podiumLabels,
+                            datasets: [{
+                                data: podiumData,
+                                backgroundColor: ['#E5E7EB', '#1F2937', '#F3F4F6'],
+                                borderColor: ['#D1D5DB', '#111827', '#E5E7EB'],
+                                borderWidth: 1,
+                                borderRadius: 8,
+                                barPercentage: 0.65
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            layout: { padding: { top: 25 } }, 
+                            scales: {
+                                y: { display: false, grid: { display: false } },
+                                x: { 
+                                    grid: { display: false },
+                                    ticks: {
+                                        color: '#111827',
+                                        font: { weight: 'bold', size: 12 }
+                                    }
+                                }
+                            }
+                        },
+                        plugins: [chartLabelsPlugin]
                     });
 
                 } catch (err) {
