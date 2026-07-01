@@ -83,7 +83,7 @@
         <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
             <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
                 <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
-                <p class="text-xs text-gray-500">Cliquez sur une ligne pour la modifier</p>
+                <p class="text-xs text-gray-500">Cliquez sur une ligne pour la modifier ou l'effacer</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -91,9 +91,10 @@
                         <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase font-bold tracking-wider bg-gray-900/40">
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
-                            <th class="px-6 py-4">Affaire Furious</th>
                             <th class="px-6 py-4 text-right">Tarif</th>
-                            <th class="px-6 py-4 text-center">Actions</th>
+                            <th class="px-6 py-4">Affaire Furious</th>
+                            <th class="px-6 py-4">Description</th>
+                            <th class="px-6 py-4">Source</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
@@ -114,32 +115,41 @@
                 <input type="hidden" id="form-id">
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Date de la formation</label>
-                    <input type="date" id="form-date" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Date / Période de la formation</label>
+                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026 ou 2026-01-15" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
                     <input type="text" id="form-client" placeholder="Ex: BMW GROUPE" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
-                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
-                </div>
-                <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
                     <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</label>
+                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white"></textarea>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Source d'apport</label>
                     <select id="form-source" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
                         <option value="EBG">EBG</option>
-                        <option value="Direct">Direct</option>
+                        <option value="Brainsonic">Brainsonic</option>
                     </select>
                 </div>
 
-                <button type="submit" id="btn-submit-form" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
-                    Enregistrer la ligne
-                </button>
+                <div class="flex gap-4 pt-2">
+                    <button type="button" id="btn-delete-form" class="hidden flex-1 bg-red-950/40 hover:bg-red-900/40 text-red-400 border border-red-900/50 font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer">
+                        Supprimer la ligne
+                    </button>
+                    <button type="submit" id="btn-submit-form" class="flex-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
+                        Enregistrer la ligne
+                    </button>
+                </div>
             </form>
             <div id="form-success-container" class="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center hidden">
                 <p id="form-success" class="text-xs text-emerald-400 font-bold">Ligne enregistrée ! Redirection vers le dashboard...</p>
@@ -172,7 +182,6 @@
                 document.getElementById(screenId).classList.remove('hidden');
             }
 
-            // Persistence de session
             if (localStorage.getItem('morgan_authenticated') === 'true') {
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
@@ -211,8 +220,9 @@
                 document.getElementById('form-id').value = '';
                 document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
                 document.getElementById('btn-submit-form').innerText = "Enregistrer la ligne";
+                document.getElementById('btn-delete-form').classList.add('hidden');
                 document.getElementById('insert-form').reset();
-                document.getElementById('form-date').value = new Date().toISOString().substring(0, 10);
+                document.getElementById('form-date').value = "Janvier 2026";
                 document.getElementById('form-success-container').classList.add('hidden');
                 showScreen('screen-form');
             });
@@ -229,90 +239,81 @@
                 document.getElementById('form-id').value = currentItem.id;
                 document.getElementById('form-title').innerText = "Modifier l'affaire";
                 document.getElementById('btn-submit-form').innerText = "Mettre à jour la ligne";
+                document.getElementById('btn-delete-form').classList.remove('hidden');
                 
-                document.getElementById('form-date').value = currentItem.date;
-                document.getElementById('form-client').value = currentItem.client;
-                document.getElementById('form-furious').value = currentItem.furious;
-                document.getElementById('form-tarif').value = currentItem.tarif;
-                document.getElementById('form-source').value = currentItem.source;
+                document.getElementById('form-date').value = currentItem.date || '';
+                document.getElementById('form-client').value = currentItem.client || '';
+                document.getElementById('form-tarif').value = currentItem.montant || 0;
+                document.getElementById('form-furious').value = currentItem.furious || '';
+                document.getElementById('form-description').value = currentItem.description || '';
+                document.getElementById('form-source').value = currentItem.source || 'Brainsonic';
 
                 document.getElementById('form-success-container').classList.add('hidden');
                 showScreen('screen-form');
             };
 
-            window.deleteItem = async function(event, id) {
-                event.stopPropagation();
+            document.getElementById('btn-delete-form').addEventListener('click', async () => {
+                const id = document.getElementById('form-id').value;
+                if (!id) return;
                 if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
 
-                const { error } = await supabase.from('mes_notes').delete().eq('id', id);
+                const { error } = await supabase.from('ventes').delete().eq('id', id);
                 if (!error) {
+                    showScreen('screen-dashboard');
                     fetchAndRenderDashboard();
                 } else {
                     alert("Erreur de suppression : " + error.message);
                 }
-            };
+            });
 
-            // --- FETCH ET RENDU AVEC PARSING BLINDÉ (ANTI-CRASH) ---
+            // --- LECTURE ET TRAITEMENT ---
             async function fetchAndRenderDashboard() {
                 try {
-                    const { data: rows, error } = await supabase.from('mes_notes').select('*');
+                    const { data: ventes, error } = await supabase.from('ventes').select('*');
 
-                    if (error || !rows || rows.length === 0) {
+                    if (error || !ventes || ventes.length === 0) {
                         document.getElementById('kpi-total').innerText = "0 € HT";
-                        document.getElementById('table-body').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune donnée trouvée</td></tr>';
+                        document.getElementById('kpi-ebg').innerText = "0 € HT";
+                        document.getElementById('kpi-direct').innerText = "0 € HT";
+                        document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Aucune affaire trouvée</td></tr>';
                         return;
                     }
 
-                    const ventes = [];
-                    rows.forEach(row => {
-                        // Un contenu vide ou non-JSON ne doit pas faire planter l'application
-                        if (!row.content || !row.content.trim().startsWith('{')) {
-                            return; // On ignore simplement les vieilles lignes corrompues
-                        }
-                        
-                        try {
-                            const meta = JSON.parse(row.content);
-                            ventes.push({
-                                id: row.id,
-                                client: row.title || 'Inconnu',
-                                date: meta.date || new Date().toISOString().substring(0, 10),
-                                furious: meta.furious || '',
-                                tarif: parseFloat(meta.tarif || 0),
-                                source: meta.source || 'Direct'
-                            });
-                        } catch(e) {
-                            // Sécurité supplémentaire si un JSON est mal écrit
-                            console.warn("Ligne ignorée en raison d'un mauvais format JSON ID:", row.id);
-                        }
-                    });
-
                     globalVentes = ventes;
-                    const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Tri tolérant : si la date est textuelle (ex "Janvier"), on trie par ID décroissant pour garder l'ordre d'insertion
+                    const ventesInversees = [...ventes].sort((a, b) => b.id - a.id);
 
                     let totalCA = 0;
                     let totalEBG = 0;
                     let totalDirect = 0;
-                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                    
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
                     ventes.forEach(v => {
-                        totalCA += v.tarif;
+                        const valMontant = parseFloat(v.montant || 0);
+                        totalCA += valMontant;
                         
-                        if (v.source === 'EBG') totalEBG += v.tarif;
-                        if (v.source === 'Direct') totalDirect += v.tarif;
+                        if (v.source === 'EBG') totalEBG += valMontant;
+                        if (v.source === 'Brainsonic' || v.source === 'Direct') totalDirect += valMontant;
 
-                        const dateObj = new Date(v.date);
-                        if (!isNaN(dateObj.getTime())) {
-                            monthlyData[months[dateObj.getMonth()]] += v.tarif;
+                        // Extraction intelligente du mois textuel (ex "Janvier 2026" -> "Janvier")
+                        let monthFound = 'Janvier';
+                        for (let m of Object.keys(monthlyData)) {
+                            if (String(v.date).includes(m)) {
+                                monthFound = m;
+                                break;
+                            }
                         }
+                        monthlyData[monthFound] += valMontant;
 
-                        let cleanClient = v.client.toUpperCase().trim();
+                        let cleanClient = (v.client || 'INCONNU').toUpperCase().trim();
                         if (cleanClient.includes('SEB')) cleanClient = 'GROUPE SEB';
                         else if (cleanClient.includes('BMW')) cleanClient = 'BMW GROUPE';
 
                         if (!cleanClient.includes('EBG')) {
-                            clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + v.tarif;
+                            clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + valMontant;
                         }
                     });
 
@@ -341,24 +342,18 @@
 
                     const tbody = document.getElementById('table-body');
                     tbody.innerHTML = '';
-                    
-                    if (ventesInversees.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune affaire valide trouvée (créez-en une avec le bouton Push)</td></tr>';
-                    } else {
-                        ventesInversees.forEach(v => {
-                            tbody.insertAdjacentHTML('beforeend', `
-                                <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
-                                    <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
-                                    <td class="px-6 py-4 font-bold text-white">${v.client}</td>
-                                    <td class="px-6 py-4 text-gray-400 font-medium">${v.furious}</td>
-                                    <td class="px-6 py-4 text-right font-mono font-bold text-white">${v.tarif.toLocaleString('fr-FR')} €</td>
-                                    <td class="px-6 py-4 text-center">
-                                        <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
-                                    </td>
-                                </tr>
-                            `);
-                        });
-                    }
+                    ventesInversees.forEach(v => {
+                        tbody.insertAdjacentHTML('beforeend', `
+                            <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
+                                <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
+                                <td class="px-6 py-4 font-bold text-white">${v.client || ''}</td>
+                                <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                                <td class="px-6 py-4 text-gray-300 font-medium">${v.furious || ''}</td>
+                                <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
+                                <td class="px-6 py-4 font-semibold text-xs ${v.source === 'EBG' ? 'text-indigo-400' : 'text-cyan-400'}">${v.source || ''}</td>
+                            </tr>
+                        `);
+                    });
 
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
@@ -389,32 +384,27 @@
                 }
             }
 
-            // --- PERSISTENCE FORMULAIRE ---
+            // --- TRANSMISSION SÉCURISÉE ---
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const targetId = document.getElementById('form-id').value;
-                const clientValue = document.getElementById('form-client').value;
-                
-                const metadataObj = {
-                    date: document.getElementById('form-date').value,
-                    furious: document.getElementById('form-furious').value,
-                    tarif: parseFloat(document.getElementById('form-tarif').value),
-                    source: document.getElementById('form-source').value
-                };
-                const contentValue = JSON.stringify(metadataObj);
 
                 const payload = {
-                    title: clientValue,
-                    content: contentValue
+                    date: document.getElementById('form-date').value,
+                    client: document.getElementById('form-client').value,
+                    montant: parseFloat(document.getElementById('form-tarif').value),
+                    furious: document.getElementById('form-furious').value,
+                    description: document.getElementById('form-description').value,
+                    source: document.getElementById('form-source').value
                 };
 
                 let resultError = null;
 
                 if (targetId) {
-                    const { error } = await supabase.from('mes_notes').update(payload).eq('id', targetId);
+                    const { error } = await supabase.from('ventes').update(payload).eq('id', targetId);
                     resultError = error;
                 } else {
-                    const { error } = await supabase.from('mes_notes').insert([payload]);
+                    const { error } = await supabase.from('ventes').insert([payload]);
                     resultError = error;
                 }
 
@@ -427,7 +417,7 @@
                         fetchAndRenderDashboard();
                     }, 1200);
                 } else {
-                    alert("Erreur d'enregistrement Supabase : " + resultError.message);
+                    alert("Erreur d'enregistrement : " + resultError.message);
                 }
             });
         });
