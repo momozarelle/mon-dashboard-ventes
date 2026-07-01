@@ -16,25 +16,13 @@
                 Reporting Morgan 2026
             </h2>
             
-<<<<<<< HEAD
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
                            class="w-full bg-gray-900/60 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-10 select-none">👁️</button>
-=======
-            <div class="space-y-4">
-                <div class="relative">
-                    <input type="password" id="auth-password" placeholder="Mot de passe" 
-                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 top-3.5 text-gray-500 hover:text-gray-300 text-sm cursor-pointer">👁️</button>
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-30 select-none">👁️</button>
                 </div>
-<<<<<<< HEAD
                 <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
-=======
-                <button type="button" id="btn-login" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
@@ -162,7 +150,7 @@
         let chartInstance = null;
         let globalVentes = [];
 
-        // --- GESTION DES ÉCRANS & NAVIGATION ---
+        // --- NAVIGATION INTERNE ---
         function showScreen(screenId) {
             document.getElementById('screen-auth').classList.add('hidden');
             document.getElementById('screen-dashboard').classList.add('hidden');
@@ -170,7 +158,7 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // Gestion de l'œil (Affichage/Masquage mot de passe)
+        // Gestion de l'œil
         const passwordInput = document.getElementById('auth-password');
         const togglePwdBtn = document.getElementById('btn-toggle-pwd');
         togglePwdBtn.addEventListener('click', () => {
@@ -183,17 +171,10 @@
             }
         });
 
-<<<<<<< HEAD
-        // Formulaire de Connexion (Clic et Entrée gérés via 'submit')
+        // Connexion unifiée (Clic & Entrée)
         document.getElementById('auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             if (passwordInput.value.trim() === '1234') {
-=======
-        // Connexion sécurisée
-        document.getElementById('btn-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            if (passwordInput.value.trim() === '1234') {
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
                 document.getElementById('auth-error').classList.add('hidden');
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
@@ -202,18 +183,7 @@
             }
         });
 
-<<<<<<< HEAD
-        // Aller au formulaire
-=======
-        // Validation en pressant Entrée
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('btn-login').click();
-            }
-        });
-
-        // Création
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
+        // Formulaire création
         document.getElementById('btn-go-to-form').addEventListener('click', () => {
             document.getElementById('form-id').value = '';
             document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -224,17 +194,13 @@
             showScreen('screen-form');
         });
 
-        // Retour au Dashboard
+        // Retour
         document.getElementById('btn-back-to-dash').addEventListener('click', () => {
             showScreen('screen-dashboard');
             fetchAndRenderDashboard();
         });
 
-<<<<<<< HEAD
-        // Remplir le formulaire pour modification
-=======
         // Modification
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         function openEditMode(id) {
             const currentItem = globalVentes.find(v => v.id === id);
             if (!currentItem) return;
@@ -253,11 +219,7 @@
             showScreen('screen-form');
         }
 
-<<<<<<< HEAD
-        // Supprimer une ligne
-=======
         // Suppression
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         async function deleteItem(event, id) {
             event.stopPropagation();
             if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
@@ -270,7 +232,7 @@
             }
         }
 
-        // --- EXÉCUTION & RENDU ---
+        // --- GRAPH ET RENDU ---
         async function fetchAndRenderDashboard() {
             try {
                 const { data: ventes, error } = await supabase.from('mes_notes').select('*');
@@ -372,11 +334,7 @@
             }
         }
 
-<<<<<<< HEAD
-        // --- ENREGISTREMENT / MODIFICATION ---
-=======
-        // --- FORMULAIRE ACTION ---
->>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
+        // --- ACTIONS FORMULAIRE ---
         document.getElementById('insert-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetId = document.getElementById('form-id').value;
