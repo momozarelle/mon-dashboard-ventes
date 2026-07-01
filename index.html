@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/dist/umd/supabase.js"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 700px; box-sizing: border-box; position: relative; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 700px; box-sizing: border-box; }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         h1 { font-size: 22px; color: #fff; margin: 0; }
@@ -18,7 +18,6 @@
         .password-container input { margin-bottom: 0; padding-right: 45px; }
         .toggle-password { position: absolute; right: 12px; cursor: pointer; color: #888; font-size: 18px; user-select: none; z-index: 10; }
         
-        /* Boutons spécifiques */
         button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 5px; }
         button:hover { background: #34b27b; }
         .btn-action { width: auto; padding: 10px 15px; margin: 0; font-size: 13px; }
@@ -30,7 +29,6 @@
         .success { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); }
         .error { color: #f25c54; background: rgba(242, 92, 84, 0.1); }
         
-        /* Tableau d'affichage du Dashboard */
         .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 12px; border-bottom: 1px solid #333; }
@@ -38,7 +36,6 @@
         tr:hover { background: rgba(255,255,255,0.02); }
         .empty-msg { color: #888; text-align: center; padding: 20px; font-size: 13px; }
         
-        /* Formulaire */
         .form-group { margin-bottom: 5px; }
         .form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
     </style>
@@ -115,8 +112,8 @@
         const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        // SÉCURITÉ : Renseigne ton mot de passe ici
-        const SECRET_PASSWORD = "Ytqywa613%%"; 
+        // MOT DE PASSE INTÉGRÉ
+        const SECRET_PASSWORD = "1234"; 
 
         let supabaseClient;
 
@@ -141,30 +138,30 @@
         function checkPassword() {
             const input = document.getElementById('password-input').value;
             if (input === SECRET_PASSWORD) {
+                // On cache l'écran de login
                 document.getElementById('login-screen').classList.add('hidden');
+                // On s'assure que le formulaire reste bien caché
+                document.getElementById('form-screen').classList.add('hidden');
+                // On bascule explicitement sur l'accueil du dashboard
                 goToDashboard();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
             }
         }
 
-        // Navigation : Vers l'accueil Dashboard
         function goToDashboard() {
             document.getElementById('form-screen').classList.add('hidden');
             document.getElementById('dashboard-screen').classList.remove('hidden');
             fetchEntries();
         }
 
-        // Navigation : Vers le Formulaire
         function goToForm() {
             document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('form-screen').classList.remove('hidden');
             document.getElementById('status-message').classList.add('hidden');
-            // Pré-remplir la date du jour par défaut
             document.getElementById('form-date').valueAsDate = new Date();
         }
 
-        // Récupérer et afficher les lignes structurées
         async function fetchEntries() {
             const tbody = document.getElementById('table-body');
             if (!supabaseClient) return;
@@ -198,7 +195,6 @@
             }).join('');
         }
 
-        // Envoyer le formulaire structuré à Supabase
         async function sendToSupabase() {
             const dateVal = document.getElementById('form-date').value;
             const clientVal = document.getElementById('form-client').value;
@@ -214,7 +210,6 @@
             btn.disabled = true;
             btn.innerText = "Ajout en cours...";
 
-            // Insertion des données structurées, la colonne 'contenu' garde une trace de secours
             const { data, error } = await supabaseClient
                 .from('mes_notes')
                 .insert([{ 
@@ -232,7 +227,6 @@
                 showStatus("Erreur d'insertion : " + error.message, "error");
             } else {
                 showStatus("Données ajoutées avec succès !", "success");
-                // Nettoyage du formulaire pour la prochaine saisie
                 document.getElementById('form-client').value = "";
                 document.getElementById('form-furious').value = "";
                 document.getElementById('form-tarif').value = "";
