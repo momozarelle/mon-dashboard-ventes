@@ -16,13 +16,13 @@
                 Reporting Morgan 2026
             </h2>
             
-            <form id="auth-form" class="space-y-4" onsubmit="handleLogin(event)">
+            <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest relative z-10">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-20 select-none border-none bg-transparent outline-none">👁️</button>
+                           class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest z-10">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-30 select-none bg-transparent border-none outline-none">👁️</button>
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer relative z-10">
+                <button type="submit" id="btn-login-submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer z-10">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
@@ -150,7 +150,7 @@
         let chartInstance = null;
         let globalVentes = [];
 
-        // --- ENCAPSULATION DE LA NAVIGATION ---
+        // --- GESTION DES ÉCRANS ---
         function showScreen(screenId) {
             document.getElementById('screen-auth').classList.add('hidden');
             document.getElementById('screen-dashboard').classList.add('hidden');
@@ -158,13 +158,14 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // Commutateur de l'œil d'authentification autonome
+        // --- AUTHENTIFICATION CORRIGÉE ---
         const passwordInput = document.getElementById('auth-password');
         const togglePwdBtn = document.getElementById('btn-toggle-pwd');
-        
-        togglePwdBtn.addEventListener('click', (e) => {
+        const authForm = document.getElementById('auth-form');
+
+        // Gestionnaire du clic de l'œil propre
+        togglePwdBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 togglePwdBtn.innerText = '🙈';
@@ -174,19 +175,21 @@
             }
         });
 
-        // Intercepteur d'authentification unifié (Entrée et Clic)
-        function handleLogin(event) {
+        // Gestionnaire de soumission propre (gère le clic ET la touche Entrée)
+        authForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            if (passwordInput.value.trim() === '1234') {
+            const inputVal = passwordInput.value.trim();
+            
+            if (inputVal === '1234') {
                 document.getElementById('auth-error').classList.add('hidden');
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
             } else {
                 document.getElementById('auth-error').classList.remove('hidden');
             }
-        }
+        });
 
-        // Redirections internes
+        // --- NAVIGATION INTERNE ---
         document.getElementById('btn-go-to-form').addEventListener('click', () => {
             document.getElementById('form-id').value = '';
             document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -202,7 +205,7 @@
             fetchAndRenderDashboard();
         });
 
-        // Activation modification
+        // Modification
         function openEditMode(id) {
             const currentItem = globalVentes.find(v => v.id === id);
             if (!currentItem) return;
@@ -221,7 +224,7 @@
             showScreen('screen-form');
         }
 
-        // Exécution suppression
+        // Suppression
         async function deleteItem(event, id) {
             event.stopPropagation();
             if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
@@ -234,7 +237,7 @@
             }
         }
 
-        // --- CALCULS ET TRAITEMENT DES FLUX DATA ---
+        // --- DASHBOARD RENDU ---
         async function fetchAndRenderDashboard() {
             try {
                 const { data: ventes, error } = await supabase.from('mes_notes').select('*');
@@ -336,7 +339,7 @@
             }
         }
 
-        // --- ENREGISTREMENT ET MODIFICATION ---
+        // --- PERSISTENCE ---
         document.getElementById('insert-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetId = document.getElementById('form-id').value;
