@@ -89,11 +89,20 @@
             </div>
         </div>
 
-        <!-- Tableau des data - Ordre strict validé -->
+        <!-- Tableau des data - Ordre strict validé + Bouton Loupe Senior -->
         <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
-            <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
-                <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
-                <p class="text-xs text-gray-500">Cliquez sur une ligne pour la modifier ou l'effacer</p>
+            <div class="px-6 py-5 border-b border-gray-800/80 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-900/20 gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
+                    <!-- Bouton Loupe discret -->
+                    <button id="btn-toggle-search" class="text-gray-400 hover:text-white text-sm transition-colors cursor-pointer" title="Rechercher une affaire">🔍</button>
+                </div>
+                <!-- Zone de recherche extensible masquée par défaut -->
+                <div id="search-container" class="hidden w-full sm:w-64 transition-all duration-300">
+                    <input type="text" id="table-search" placeholder="Filtrer par client, furious..." 
+                           class="w-full bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-500 text-white placeholder-gray-500">
+                </div>
+                <p id="search-hint" class="text-xs text-gray-500 sm:ml-auto">Cliquez sur une ligne pour la modifier ou l'effacer</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -169,7 +178,7 @@
         </div>
     </div>
 
-    <!-- LOGIQUE INTÉGRALE SANS FILTRE D'EXCLUSION -->
+    <!-- LOGIQUE LOGICIELLE DE HAUTE FIABILITÉ -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
@@ -187,6 +196,9 @@
             const togglePwdBtn = document.getElementById('btn-toggle-pwd');
             const authForm = document.getElementById('auth-form');
             const authError = document.getElementById('auth-error');
+
+            const searchContainer = document.getElementById('search-container');
+            const searchInput = document.getElementById('table-search');
 
             function showScreen(screenId) {
                 screenAuth.classList.add('hidden');
@@ -227,6 +239,38 @@
                 localStorage.removeItem('morgan_authenticated');
                 passwordInput.value = '';
                 showScreen('screen-auth');
+            });
+
+            // Basculer l'affichage de la zone de recherche (Loupe)
+            document.getElementById('btn-toggle-search').addEventListener('click', () => {
+                if (searchContainer.classList.contains('hidden')) {
+                    searchContainer.classList.remove('hidden');
+                    searchInput.focus();
+                } else {
+                    searchContainer.classList.add('hidden');
+                    searchInput.value = '';
+                    renderTableRows(globalVentes); // Reset filtre
+                }
+            });
+
+            // Écouteur sur la recherche en temps réel (Live filtering)
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase().trim();
+                
+                if (!query) {
+                    renderTableRows(globalVentes);
+                    return;
+                }
+
+                const filtered = globalVentes.filter(v => {
+                    return (v.client && v.client.toLowerCase().includes(query)) ||
+                           (v.furious && v.furious.toLowerCase().includes(query)) ||
+                           (v.description && v.description.toLowerCase().includes(query)) ||
+                           (v.source && v.source.toLowerCase().includes(query)) ||
+                           (v.date && String(v.date).toLowerCase().includes(query));
+                });
+
+                renderTableRows(filtered);
             });
 
             document.getElementById('btn-go-to-form').addEventListener('click', () => {
@@ -279,7 +323,34 @@
                 }
             });
 
-            // --- LECTURE COMPLÈTE SANS FILTRES ---
+            // Injection et construction découplée des lignes pour le filtrage live
+            function renderTableRows(dataArray) {
+                const tbody = document.getElementById('table-body');
+                tbody.innerHTML = '';
+                
+                // Tri par ID décroissant pour l'ordre d'insertion inverse
+                const sorted = [...dataArray].sort((a, b) => b.id - a.id);
+
+                if (sorted.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Aucune affaire ne correspond à la recherche</td></tr>';
+                    return;
+                }
+
+                sorted.forEach(v => {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
+                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
+                            <td class="px-6 py-4 font-bold text-white">${v.client || ''}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
+                            <td class="px-6 py-4 font-semibold text-xs ${v.source === 'EBG' ? 'text-indigo-400' : 'text-cyan-400'}">${v.source || ''}</td>
+                            <td class="px-6 py-4 text-gray-300 font-mono text-xs">${v.furious || ''}</td>
+                        </tr>
+                    `);
+                });
+            }
+
+            // --- REQUÊTE BASE DE DONNÉES ---
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
@@ -293,9 +364,6 @@
                     }
 
                     globalVentes = ventes;
-                    
-                    // Tri décroissant pour afficher les dernières entrées en premier
-                    const ventesInversees = [...ventes].sort((a, b) => b.id - a.id);
 
                     let totalCA = 0;
                     let totalEBG = 0;
@@ -352,21 +420,8 @@
                         `);
                     });
 
-                    // Ordre de rendu modifié : Date ➔ Client ➔ Tarif ➔ Description ➔ Source ➔ Affaire Furious
-                    const tbody = document.getElementById('table-body');
-                    tbody.innerHTML = '';
-                    ventesInversees.forEach(v => {
-                        tbody.insertAdjacentHTML('beforeend', `
-                            <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
-                                <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
-                                <td class="px-6 py-4 font-bold text-white">${v.client || ''}</td>
-                                <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
-                                <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
-                                <td class="px-6 py-4 font-semibold text-xs ${v.source === 'EBG' ? 'text-indigo-400' : 'text-cyan-400'}">${v.source || ''}</td>
-                                <td class="px-6 py-4 text-gray-300 font-mono text-xs">${v.furious || ''}</td>
-                            </tr>
-                        `);
-                    });
+                    // Rendu initial du tableau complet
+                    renderTableRows(globalVentes);
 
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
