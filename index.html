@@ -376,7 +376,7 @@
                     
                     let podiumLabels = ['-', '-', '-'];
                     let podiumData = [0, 0, 0];
-                    let rawPodiumAmounts = [0, 0, 0]; // Stockage brut des nombres pour l'affichage du plugin
+                    let rawPodiumAmounts = [0, 0, 0]; 
                     
                     if (topClientsSorted[0]) { 
                         podiumLabels[1] = '#1 ' + topClientsSorted[0][0];
@@ -396,7 +396,7 @@
 
                     renderTableRows(globalVentes);
 
-                    // 1. Rendu Histogramme d'Évolution Mensuelle (Barres passées en noir profond + tooltips actifs)
+                    // 1. Rendu Histogramme d'Évolution Mensuelle
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
@@ -405,7 +405,7 @@
                             labels: activeMonths,
                             datasets: [{
                                 data: activeMonths.map(m => monthlyData[m]),
-                                backgroundColor: '#111827', // Noir profond Apple/ChatGPT
+                                backgroundColor: '#111827', 
                                 hoverBackgroundColor: '#000000',
                                 borderRadius: 4
                             }]
@@ -415,7 +415,7 @@
                             maintainAspectRatio: false, 
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { enabled: true } // Activation explicite du montant agrégé au survol
+                                tooltip: { enabled: true } 
                             },
                             scales: {
                                 y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
@@ -424,7 +424,7 @@
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium (Avec valeurs réelles chiffrées lues dynamiquement depuis rawPodiumAmounts)
+                    // 2. Rendu Histogramme Podium (Avec infobulles activées au survol)
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     
                     const chartLabelsPlugin = {
@@ -452,6 +452,7 @@
                         data: {
                             labels: podiumLabels,
                             datasets: [{
+                                label: 'CA Cumulé',
                                 data: podiumData,
                                 backgroundColor: ['#E5E7EB', '#111827', '#F3F4F6'],
                                 borderColor: ['#D1D5DB', '#111827', '#E5E7EB'],
@@ -465,7 +466,14 @@
                             maintainAspectRatio: false,
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { enabled: false } // Masqué sur le podium pour laisser place aux étiquettes fixes
+                                tooltip: { 
+                                    enabled: true, // Activation de l'infobulle au survol
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
+                                        }
+                                    }
+                                } 
                             },
                             layout: { padding: { top: 25 } }, 
                             scales: {
