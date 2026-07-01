@@ -148,7 +148,6 @@
     </div>
 
     <script>
-        // DOMContentLoaded garantit que les éléments HTML sont lus AVANT d'attacher JS
         window.addEventListener('DOMContentLoaded', () => {
             
             const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
@@ -173,13 +172,12 @@
                 document.getElementById(screenId).classList.remove('hidden');
             }
 
-            // Gestion de l'état persistant de la session
+            // Persistence de session
             if (localStorage.getItem('morgan_authenticated') === 'true') {
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
             }
 
-            // Infaillibilité du bouton de masquage / affichage du mdp
             togglePwdBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (passwordInput.type === 'password') {
@@ -191,7 +189,6 @@
                 }
             });
 
-            // Soumission unifiée native de l'accès sécurisé
             authForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (passwordInput.value.trim() === '1234') {
@@ -210,7 +207,6 @@
                 showScreen('screen-auth');
             });
 
-            // Routages de navigation interne
             document.getElementById('btn-go-to-form').addEventListener('click', () => {
                 document.getElementById('form-id').value = '';
                 document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -226,7 +222,6 @@
                 fetchAndRenderDashboard();
             });
 
-            // Injection sécurisée dans l'environnement global pour les actions du tableau dynamique
             window.openEditMode = function(id) {
                 const currentItem = globalVentes.find(v => v.id === id);
                 if (!currentItem) return;
@@ -257,7 +252,7 @@
                 }
             };
 
-            // --- LECTURE ET PARSING DES COMPOSANTS DE STRUCTURE CLIENTS (`title`/`content`) ---
+            // --- FETCH ET RENDU AVEC PARSING BLINDÉ (ANTI-CRASH) ---
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: rows, error } = await supabase.from('mes_notes').select('*');
@@ -268,11 +263,14 @@
                         return;
                     }
 
-                    // Mapping virtuel : On reconstruit nos objets métiers complexes depuis le modèle d'origine de ta table
                     const ventes = [];
                     rows.forEach(row => {
+                        // Un contenu vide ou non-JSON ne doit pas faire planter l'application
+                        if (!row.content || !row.content.trim().startsWith('{')) {
+                            return; // On ignore simplement les vieilles lignes corrompues
+                        }
+                        
                         try {
-                            // On tente de lire l'objet JSON stocké dans la colonne content
                             const meta = JSON.parse(row.content);
                             ventes.push({
                                 id: row.id,
@@ -283,15 +281,8 @@
                                 source: meta.source || 'Direct'
                             });
                         } catch(e) {
-                            // Fallback rétrocompatible si le format dans content n'est pas du JSON (anciennes lignes de test)
-                            ventes.push({
-                                id: row.id,
-                                client: row.title || 'Inconnu',
-                                date: new Date().toISOString().substring(0, 10),
-                                furious: row.content || '',
-                                tarif: 0,
-                                source: 'Direct'
-                            });
+                            // Sécurité supplémentaire si un JSON est mal écrit
+                            console.warn("Ligne ignorée en raison d'un mauvais format JSON ID:", row.id);
                         }
                     });
 
@@ -350,19 +341,24 @@
 
                     const tbody = document.getElementById('table-body');
                     tbody.innerHTML = '';
-                    ventesInversees.forEach(v => {
-                        tbody.insertAdjacentHTML('beforeend', `
-                            <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
-                                <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
-                                <td class="px-6 py-4 font-bold text-white">${v.client}</td>
-                                <td class="px-6 py-4 text-gray-400 font-medium">${v.furious}</td>
-                                <td class="px-6 py-4 text-right font-mono font-bold text-white">${v.tarif.toLocaleString('fr-FR')} €</td>
-                                <td class="px-6 py-4 text-center">
-                                    <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
-                                </td>
-                            </tr>
-                        `);
-                    });
+                    
+                    if (ventesInversees.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune affaire valide trouvée (créez-en une avec le bouton Push)</td></tr>';
+                    } else {
+                        ventesInversees.forEach(v => {
+                            tbody.insertAdjacentHTML('beforeend', `
+                                <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
+                                    <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
+                                    <td class="px-6 py-4 font-bold text-white">${v.client}</td>
+                                    <td class="px-6 py-4 text-gray-400 font-medium">${v.furious}</td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-white">${v.tarif.toLocaleString('fr-FR')} €</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    }
 
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
@@ -393,14 +389,12 @@
                 }
             }
 
-            // --- ÉCRITURE ET SÉRIALISATION COMPATIBLE AVEC TA COMPOSITION DE TABLE (`title`/`content`) ---
+            // --- PERSISTENCE FORMULAIRE ---
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const targetId = document.getElementById('form-id').value;
-
                 const clientValue = document.getElementById('form-client').value;
                 
-                // Emballage des métadonnées étendues dans une chaîne JSON pour la colonne content
                 const metadataObj = {
                     date: document.getElementById('form-date').value,
                     furious: document.getElementById('form-furious').value,
@@ -409,7 +403,6 @@
                 };
                 const contentValue = JSON.stringify(metadataObj);
 
-                // Payload aligné à 100% avec les colonnes de ta photo Supabase
                 const payload = {
                     title: clientValue,
                     content: contentValue
@@ -429,7 +422,6 @@
                     document.getElementById('form-success-container').classList.remove('hidden');
                     if (!targetId) document.getElementById('insert-form').reset();
                     
-                    // UX Senior : Message de succès clair puis redirection automatique temporisée vers le tableau rechargé
                     setTimeout(() => {
                         showScreen('screen-dashboard');
                         fetchAndRenderDashboard();
