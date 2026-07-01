@@ -6,6 +6,7 @@
     <title>Reporting Morgan 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#F9FAFB] text-[#111827] font-sans antialiased min-h-screen selection:bg-black selection:text-white">
@@ -130,7 +131,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
@@ -166,6 +167,9 @@
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
+            // Enregistrement global obligatoire du plugin datalabels
+            Chart.register(ChartDataLabels);
+
             const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
             const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -376,22 +380,18 @@
                     
                     let podiumLabels = ['-', '-', '-'];
                     let podiumData = [0, 0, 0];
-                    let rawPodiumAmounts = [0, 0, 0]; 
                     
                     if (topClientsSorted[0]) { 
                         podiumLabels[1] = '#1 ' + topClientsSorted[0][0];
                         podiumData[1] = topClientsSorted[0][1];
-                        rawPodiumAmounts[1] = topClientsSorted[0][1];
                     }
                     if (topClientsSorted[1]) { 
                         podiumLabels[0] = '#2 ' + topClientsSorted[1][0];
                         podiumData[0] = topClientsSorted[1][1];
-                        rawPodiumAmounts[0] = topClientsSorted[1][1];
                     }
                     if (topClientsSorted[2]) { 
                         podiumLabels[2] = '#3 ' + topClientsSorted[2][0];
                         podiumData[2] = topClientsSorted[2][1];
-                        rawPodiumAmounts[2] = topClientsSorted[2][1];
                     }
 
                     renderTableRows(globalVentes);
@@ -415,7 +415,8 @@
                             maintainAspectRatio: false, 
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { enabled: true } 
+                                tooltip: { enabled: true },
+                                datalabels: { display: false } // Désactivé sur l'évolution pour pas surcharger
                             },
                             scales: {
                                 y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
@@ -424,28 +425,8 @@
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium (Avec forçage d'intersection pour activer le survol)
+                    // 2. Rendu Histogramme Podium Senior Native-Datalabels + Tooltips combinés
                     if (podiumChartInstance) podiumChartInstance.destroy();
-                    
-                    const chartLabelsPlugin = {
-                        id: 'chartLabelsPlugin',
-                        afterDatasetsDraw(chart) {
-                            const { ctx } = chart;
-                            ctx.save();
-                            ctx.font = 'bold 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-                            ctx.fillStyle = '#111827';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-
-                            chart.metasets[0].data.forEach((bar, index) => {
-                                const value = rawPodiumAmounts[index];
-                                if (value > 0) {
-                                    ctx.fillText(`${value.toLocaleString('fr-FR')} €`, bar.x, bar.y - 6);
-                                }
-                            });
-                            ctx.restore();
-                        }
-                    };
 
                     podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
                         type: 'bar',
@@ -464,14 +445,10 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // Correction : Forcer le mode de détection pour contourner le masquage de l'axe Y
-                            interaction: {
-                                mode: 'nearest',
-                                intersect: true,
-                                axis: 'x'
-                            },
+                            layout: { padding: { top: 25 } }, 
                             plugins: { 
                                 legend: { display: false },
+                                // TOOLTIP NATIF FLUIDE ET ACTIF AU SURVOL
                                 tooltip: { 
                                     enabled: true,
                                     backgroundColor: 'rgba(17, 24, 39, 0.95)',
@@ -484,9 +461,24 @@
                                             return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
                                         }
                                     }
-                                } 
+                                },
+                                // AFFICHAGE FIXE SANS CONFLIT DE CAPTURE DE SOURIS
+                                datalabels: {
+                                    display: true,
+                                    align: 'top',
+                                    anchor: 'end',
+                                    offset: 4,
+                                    color: '#111827',
+                                    font: {
+                                        weight: 'bold',
+                                        family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                                        size: 11
+                                    },
+                                    formatter: function(value) {
+                                        return value > 0 ? `${value.toLocaleString('fr-FR')} €` : '';
+                                    }
+                                }
                             },
-                            layout: { padding: { top: 25 } }, 
                             scales: {
                                 y: { display: false, grid: { display: false } },
                                 x: { 
@@ -497,8 +489,7 @@
                                     }
                                 }
                             }
-                        },
-                        plugins: [chartLabelsPlugin]
+                        }
                     });
 
                 } catch (err) {
