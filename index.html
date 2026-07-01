@@ -41,8 +41,8 @@
             </div>
             <div class="flex items-center gap-4">
                 <button id="btn-logout" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Déconnexion</button>
-                <button id="btn-go-to-form" class="bg-gray-900 hover:bg-black text-white text-xs font-medium px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer">
-                    Push Supabase
+                <button id="btn-go-to-form" class="bg-gray-900 hover:bg-black text-white text-xs font-medium px-6 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer">
+                    Push
                 </button>
             </div>
         </div>
@@ -86,10 +86,15 @@
                 <div class="flex items-center gap-3">
                     <h3 class="text-sm font-semibold text-gray-900 tracking-wide">Détail affaires</h3>
                 </div>
-                <div class="relative w-full sm:w-72">
-                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
-                    <input type="text" id="table-search" placeholder="Rechercher (client, furious, description...)" 
-                           class="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs transition-all">
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-72">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
+                        <input type="text" id="table-search" placeholder="Rechercher (client, furious, description...)" 
+                               class="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs transition-all">
+                    </div>
+                    <button id="btn-export-csv" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-4 py-2 border border-gray-200 rounded-xl transition-all shadow-2xs cursor-pointer flex items-center gap-1.5">
+                        📥 Export CSV
+                    </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -131,7 +136,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
@@ -167,7 +172,7 @@
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
-            // Enregistrement global obligatoire du plugin datalabels
+            // Enregistrement global du plugin datalabels
             Chart.register(ChartDataLabels);
 
             const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
@@ -178,6 +183,8 @@
             let podiumChartInstance = null;
             let globalVentes = [];
 
+            const monthsOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
             const screenAuth = document.getElementById('screen-auth');
             const screenDashboard = document.getElementById('screen-dashboard');
             const screenForm = document.getElementById('screen-form');
@@ -186,6 +193,7 @@
             const authForm = document.getElementById('auth-form');
             const authError = document.getElementById('auth-error');
             const searchInput = document.getElementById('table-search');
+            const btnExportCsv = document.getElementById('btn-export-csv');
 
             function showScreen(screenId) {
                 screenAuth.classList.add('hidden');
@@ -244,6 +252,11 @@
                 renderTableRows(filtered);
             });
 
+            // Action de l'export CSV
+            btnExportCsv.addEventListener('click', () => {
+                exportToCsv(globalVentes);
+            });
+
             document.getElementById('btn-go-to-form').addEventListener('click', () => {
                 document.getElementById('form-id').value = '';
                 document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -294,11 +307,39 @@
                 }
             });
 
+            // Fonction de tri chronologique intelligent (Décembre 2026 en haut, Janvier 2026 en bas)
+            function sortChronologically(list) {
+                return [...list].sort((a, b) => {
+                    const dateA = String(a.date || '');
+                    const dateB = String(b.date || '');
+
+                    let monthIndexA = -1;
+                    let monthIndexB = -1;
+                    
+                    monthsOrder.forEach((m, idx) => {
+                        if (dateA.includes(m)) monthIndexA = idx;
+                        if (dateB.includes(m)) monthIndexB = idx;
+                    });
+
+                    const yearA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
+                    const yearB = parseInt(dateB.match(/\d{4}/)?.[0] || '2026');
+
+                    if (yearA !== yearB) {
+                        return yearB - yearA; 
+                    }
+                    if (monthIndexA !== monthIndexB) {
+                        return monthIndexB - monthIndexA; 
+                    }
+                    return b.id - a.id; 
+                });
+            }
+
             function renderTableRows(list) {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 
-                const sortedList = [...list].sort((a, b) => b.id - a.id);
+                // Tri chronologique appliqué systématiquement
+                const sortedList = sortChronologically(list);
                 
                 if (sortedList.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
@@ -324,6 +365,40 @@
                 });
             }
 
+            // Fonction de téléchargement du CSV
+            function exportToCsv(list) {
+                if (list.length === 0) {
+                    alert("Aucune donnée à exporter.");
+                    return;
+                }
+                
+                const sortedList = sortChronologically(list);
+                
+                // En-têtes du CSV
+                let csvContent = "Date;Client;Tarif HT (EUR);Description;Source;Affaire Furious\r\n";
+                
+                sortedList.forEach(v => {
+                    const date = (v.date || '').replace(/;/g, ',');
+                    const client = (v.client || '').replace(/;/g, ',');
+                    const montant = v.montant || 0;
+                    const desc = (v.description || '').replace(/[\r\n]+/g, ' ').replace(/;/g, ',');
+                    const source = (v.source || '').replace(/;/g, ',');
+                    const furious = (v.furious || '').replace(/;/g, ',');
+                    
+                    csvContent += `"${date}";"${client}";${montant};"${desc}";"${source}";"${furious}"\r\n";`;
+                });
+                
+                // Encodage universel avec BOM pour une ouverture parfaite dans Excel (sans bugs d'accents)
+                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "export_affaires_2026.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
@@ -342,7 +417,7 @@
                     let totalEBG = 0;
                     let totalDirect = 0;
                     
-                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                    // Initialisation complète des 12 mois à 0 pour forcer leur affichage complet
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
@@ -353,20 +428,15 @@
                         if (String(v.source).trim().toUpperCase() === 'EBG') totalEBG += valMontant;
                         if (String(v.source).trim().toUpperCase() === 'BRAINSONIC' || String(v.source).trim().toUpperCase() === 'DIRECT') totalDirect += valMontant;
 
-                        let monthFound = 'Janvier';
+                        let monthFound = null;
                         for (let m of Object.keys(monthlyData)) {
-                            if (String(v.date).includes(m)) {
+                            if (String(v.date).toLowerCase().includes(m.toLowerCase())) {
                                 monthFound = m;
                                 break;
                             }
                         }
-                        monthlyData[monthFound] += valMontant;
-
-                        if (v.client) {
-                            let cleanClient = v.client.trim();
-                            if (cleanClient) {
-                                clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + valMontant;
-                            }
+                        if (monthFound) {
+                            monthlyData[monthFound] += valMontant;
                         }
                     });
 
@@ -375,6 +445,16 @@
                     document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
+
+                    // Agrégation pour le podium
+                    ventes.forEach(v => {
+                        if (v.client) {
+                            let cleanClient = v.client.trim();
+                            if (cleanClient) {
+                                clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + parseFloat(v.montant || 0);
+                            }
+                        }
+                    });
 
                     const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
                     
@@ -396,15 +476,14 @@
 
                     renderTableRows(globalVentes);
 
-                    // 1. Rendu Histogramme d'Évolution Mensuelle
+                    // 1. Rendu Histogramme d'Évolution Mensuelle (Avec TOUS les 12 mois forcés)
                     if (chartInstance) chartInstance.destroy();
-                    const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
                         data: {
-                            labels: activeMonths,
+                            labels: monthsOrder, // Utilisation de la liste fixe des 12 mois
                             datasets: [{
-                                data: activeMonths.map(m => monthlyData[m]),
+                                data: monthsOrder.map(m => monthlyData[m]),
                                 backgroundColor: '#111827', 
                                 hoverBackgroundColor: '#000000',
                                 borderRadius: 4
@@ -416,7 +495,7 @@
                             plugins: { 
                                 legend: { display: false },
                                 tooltip: { enabled: true },
-                                datalabels: { display: false } // Désactivé sur l'évolution pour pas surcharger
+                                datalabels: { display: false } 
                             },
                             scales: {
                                 y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
@@ -425,9 +504,8 @@
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium Senior Native-Datalabels + Tooltips combinés
+                    // 2. Rendu Histogramme Podium
                     if (podiumChartInstance) podiumChartInstance.destroy();
-
                     podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
                         type: 'bar',
                         data: {
@@ -448,7 +526,6 @@
                             layout: { padding: { top: 25 } }, 
                             plugins: { 
                                 legend: { display: false },
-                                // TOOLTIP NATIF FLUIDE ET ACTIF AU SURVOL
                                 tooltip: { 
                                     enabled: true,
                                     backgroundColor: 'rgba(17, 24, 39, 0.95)',
@@ -462,7 +539,6 @@
                                         }
                                     }
                                 },
-                                // AFFICHAGE FIXE SANS CONFLIT DE CAPTURE DE SOURIS
                                 datalabels: {
                                     display: true,
                                     align: 'top',
