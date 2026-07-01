@@ -3,248 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Morgan reporting</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/dist/umd/supabase.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 700px; box-sizing: border-box; }
-        
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        h1 { font-size: 22px; color: #fff; margin: 0; }
-        h2 { font-size: 16px; margin-top: 0; margin-bottom: 15px; color: #3ecf8e; }
-        
-        .password-container { position: relative; width: 100%; margin-bottom: 15px; display: flex; align-items: center; }
-        input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
-        .password-container input { margin-bottom: 0; padding-right: 45px; }
-        .toggle-password { position: absolute; right: 12px; cursor: pointer; color: #888; font-size: 18px; user-select: none; z-index: 10; }
-        
-        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 5px; }
-        button:hover { background: #34b27b; }
-        .btn-action { width: auto; padding: 10px 15px; margin: 0; font-size: 13px; }
-        .btn-secondary { background: #333; color: #ccc; }
-        .btn-secondary:hover { background: #444; }
-        
-        .hidden { display: none !important; }
-        .status { font-size: 14px; margin-top: 10px; text-align: center; padding: 8px; border-radius: 4px; }
-        .success { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); }
-        .error { color: #f25c54; background: rgba(242, 92, 84, 0.1); }
-        
-        .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; }
-        th { background: #252525; color: #3ecf8e; font-weight: bold; }
-        tr:hover { background: rgba(255,255,255,0.02); }
-        .empty-msg { color: #888; text-align: center; padding: 20px; font-size: 13px; }
-        
-        .form-group { margin-bottom: 5px; }
-        .form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
-    </style>
+    <title>Reporting Morgan 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased selection:bg-cyan-500 selection:text-white min-h-screen">
 
-    <div id="login-screen" class="card">
-        <h1>Dashboard Morgan reporting</h1>
-        <div class="password-container">
-            <input type="password" id="password-input" placeholder="Entrez le mot de passe secret">
-            <span class="toggle-password" onclick="togglePasswordVisibility()">👁️</span>
-        </div>
-        <button onclick="checkPassword()">Accéder au dashboard</button>
-        <div id="login-error" class="status error hidden">Mot de passe incorrect.</div>
-    </div>
-
-    <div id="dashboard-screen" class="card hidden">
-        <div class="header-container">
-            <h1>Dashboard Morgan reporting</h1>
-            <button class="btn-action" onclick="goToForm()">Push Supabase</button>
-        </div>
-        
-        <h2>Historique des entrées en direct</h2>
-        <div class="table-container">
-            <table id="reporting-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Affaire Furious</th>
-                        <th>Tarif (€)</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <tr>
-                        <td colspan="4" class="empty-msg">Chargement du flux...</td>
-                    </tr>
-                </tbody>
-            </table>
+    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6">
+        <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md text-center">
+            <h2 class="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
+                Reporting Morgan 2026
+            </h2>
+            <p class="text-xs text-gray-400 mb-6">Brainsonic AI - Accès sécurisé</p>
+            
+            <div class="space-y-4">
+                <div class="relative">
+                    <input type="password" id="auth-password" placeholder="Mot de passe" 
+                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 top-3.5 text-gray-500 hover:text-gray-300 text-sm">👁️</button>
+                </div>
+                <button id="btn-login" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+                    Se connecter
+                </button>
+                <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
+            </div>
         </div>
     </div>
 
-    <div id="form-screen" class="card hidden">
-        <div class="header-container">
-            <h1>Nouvelle Entrée</h1>
-            <button class="btn-action btn-secondary" onclick="goToDashboard()">Retour au dashboard</button>
+    <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-10 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
+            <div>
+                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
+                    Reporting Morgan 2026
+                </h1>
+                <p class="text-sm text-gray-400 mt-1">Brainsonic AI</p>
+            </div>
+            <button id="btn-go-to-form" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-cyan-400/20 transition-all cursor-pointer">
+                Push Supabase
+            </button>
         </div>
 
-        <div class="form-group">
-            <label for="form-date">Date de la formation</label>
-            <input type="date" id="form-date">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
+                <p id="kpi-total" class="text-3xl font-black text-white mt-2 font-mono">0 € HT</p>
+            </div>
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">APPORT EBG</p>
+                <p id="kpi-ebg" class="text-3xl font-black text-indigo-400 mt-2 font-mono">0 €</p>
+                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
+            </div>
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
+                <p id="kpi-direct" class="text-3xl font-black text-cyan-400 mt-2 font-mono">0 €</p>
+                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="form-client">Nom du Client</label>
-            <input type="text" id="form-client" placeholder="Ex: BMW, SEB...">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
+                <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
+                <div class="h-64"><canvas id="monthlyChart"></canvas></div>
+            </div>
+            
+            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-gray-200 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
+                </div>
+                <div id="top-clients-list" class="space-y-4 my-auto">
+                    </div>
+                <div></div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="form-furious">Nom de l'affaire Furious</label>
-            <input type="text" id="form-furious" placeholder="Ex: F_2026_IA_01">
+        <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
+                <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
+                <p class="text-xs text-gray-500">Cliquez sur une ligne pour la modifier</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase font-bold tracking-wider bg-gray-900/40">
+                            <th class="px-6 py-4">Date</th>
+                            <th class="px-6 py-4">Client</th>
+                            <th class="px-6 py-4">Affaire Furious</th>
+                            <th class="px-6 py-4 text-right">Tarif</th>
+                            <th class="px-6 py-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
+                        </tbody>
+                </table>
+            </div>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label for="form-tarif">Tarif (€)</label>
-            <input type="number" id="form-tarif" placeholder="Ex: 5000">
+    <div id="screen-form" class="max-w-2xl mx-auto px-6 py-10 hidden">
+        <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                <h2 id="form-title" class="text-xl font-bold text-white tracking-wide">Nouvelle Entrée Supabase</h2>
+                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">Retour au dashboard</button>
+            </div>
+
+            <form id="insert-form" class="space-y-5">
+                <input type="hidden" id="form-id">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Date de la formation</label>
+                    <input type="date" id="form-date" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
+                    <input type="text" id="form-client" placeholder="Ex: BMW GROUPE" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Source d'apport</label>
+                    <select id="form-source" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                        <option value="EBG">EBG</option>
+                        <option value="Direct">Direct</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btn-submit-form" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
+                    Enregistrer la ligne
+                </button>
+            </form>
+            <p id="form-success" class="text-xs text-emerald-400 font-medium text-center mt-4 hidden">Opération effectuée avec succès !</p>
         </div>
-
-        <button id="submit-btn" onclick="sendToSupabase()">Valider et ajouter l'entrée</button>
-        <div id="status-message" class="status hidden"></div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
-        
-        // MOT DE PASSE INTÉGRÉ
-        const SECRET_PASSWORD = "1234"; 
+        const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
+        const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let supabaseClient;
+        let chartInstance = null;
+        let globalVentes = [];
 
-        window.addEventListener('load', () => {
-            if (window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // --- GESTION DES ÉCRANS & NAVIGATION ---
+        function showScreen(screenId) {
+            document.getElementById('screen-auth').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-form').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        // Système d'oeil mot de passe
+        const passwordInput = document.getElementById('auth-password');
+        const togglePwdBtn = document.getElementById('btn-toggle-pwd');
+        togglePwdBtn.addEventListener('click', () => {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                togglePwdBtn.innerText = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                togglePwdBtn.innerText = '👁️';
             }
         });
 
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password-input');
-            const toggleIcon = document.querySelector('.toggle-password');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.innerText = '🙈';
+        // Connexion
+        document.getElementById('btn-login').addEventListener('click', () => {
+            if (passwordInput.value === '1234') {
+                document.getElementById('auth-error').classList.add('hidden');
+                showScreen('screen-dashboard');
+                fetchAndRenderDashboard();
             } else {
-                passwordInput.type = 'password';
-                toggleIcon.innerText = '👁️';
+                document.getElementById('auth-error').classList.remove('hidden');
             }
+        });
+
+        // Actions Boutons Navigation (Mode Création)
+        document.getElementById('btn-go-to-form').addEventListener('click', () => {
+            document.getElementById('form-id').value = '';
+            document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
+            document.getElementById('btn-submit-form').innerText = "Enregistrer la ligne";
+            document.getElementById('insert-form').reset();
+            document.getElementById('form-date').value = new Date().toISOString().substring(0, 10);
+            document.getElementById('form-success').classList.add('hidden');
+            showScreen('screen-form');
+        });
+
+        document.getElementById('btn-back-to-dash').addEventListener('click', () => {
+            showScreen('screen-dashboard');
+            fetchAndRenderDashboard();
+        });
+
+        // Mode Modification : Chargement des données dans le formulaire au clic sur la ligne
+        function openEditMode(id) {
+            const currentItem = globalVentes.find(v => v.id === id);
+            if (!currentItem) return;
+
+            document.getElementById('form-id').value = currentItem.id;
+            document.getElementById('form-title').innerText = "Modifier l'affaire";
+            document.getElementById('btn-submit-form').innerText = "Mettre à jour la ligne";
+            
+            document.getElementById('form-date').value = currentItem.date;
+            document.getElementById('form-client').value = currentItem.client;
+            document.getElementById('form-furious').value = currentItem.furious || currentItem.description || '';
+            document.getElementById('form-tarif').value = currentItem.tarif || currentItem.montant || 0;
+            document.getElementById('form-source').value = currentItem.source || 'EBG';
+
+            document.getElementById('form-success').classList.add('hidden');
+            showScreen('screen-form');
         }
 
-        function checkPassword() {
-            const input = document.getElementById('password-input').value;
-            if (input === SECRET_PASSWORD) {
-                // On cache l'écran de login
-                document.getElementById('login-screen').classList.add('hidden');
-                // On s'assure que le formulaire reste bien caché
-                document.getElementById('form-screen').classList.add('hidden');
-                // On bascule explicitement sur l'accueil du dashboard
-                goToDashboard();
+        // Action Suppression d'une affaire
+        async function deleteItem(event, id) {
+            event.stopPropagation(); // Évite de déclencher l'ouverture de la modification
+            if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
+
+            const { error } = await supabase.from('mes_notes').delete().eq('id', id);
+            if (!error) {
+                fetchAndRenderDashboard();
             } else {
-                document.getElementById('login-error').classList.remove('hidden');
+                alert("Erreur de suppression : " + error.message);
             }
         }
 
-        function goToDashboard() {
-            document.getElementById('form-screen').classList.add('hidden');
-            document.getElementById('dashboard-screen').classList.remove('hidden');
-            fetchEntries();
+        // --- TRAITEMENT ET RENDU DES DONNÉES ---
+        async function fetchAndRenderDashboard() {
+            try {
+                const { data: ventes, error } = await supabase.from('mes_notes').select('*');
+
+                if (error || !ventes || ventes.length === 0) {
+                    document.getElementById('kpi-total').innerText = "0 € HT";
+                    document.getElementById('table-body').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune donnée trouvée</td></tr>';
+                    return;
+                }
+
+                globalVentes = ventes;
+
+                // Tri inverse (plus récent en premier)
+                const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                let totalCA = 0;
+                let totalEBG = 0;
+                let totalDirect = 0;
+                const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
+                const clientAggregation = {};
+
+                ventes.forEach(v => {
+                    const montant = parseFloat(v.tarif || v.montant || 0);
+                    totalCA += montant;
+                    
+                    if (v.source === 'EBG') totalEBG += montant;
+                    if (v.source === 'Direct') totalDirect += montant;
+
+                    const dateObj = new Date(v.date);
+                    if (!isNaN(dateObj.getTime())) {
+                        monthlyData[months[dateObj.getMonth()]] += montant;
+                    }
+
+                    let cleanClient = v.client.toUpperCase().trim();
+                    if (cleanClient.includes('SEB')) cleanClient = 'GROUPE SEB';
+                    else if (cleanClient.includes('BMW')) cleanClient = 'BMW GROUPE';
+
+                    if (!cleanClient.includes('EBG')) {
+                        clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
+                    }
+                });
+
+                // Top 3 Clients exact
+                const topClients = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+                document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
+                document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
+                document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
+                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
+                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
+
+                // Affichage Top 3
+                const topList = document.getElementById('top-clients-list');
+                topList.innerHTML = '';
+                const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
+                topClients.forEach((client, idx) => {
+                    topList.insertAdjacentHTML('beforeend', `
+                        <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
+                                <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
+                            </div>
+                            <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
+                        </div>
+                    `);
+                });
+
+                // Remplissage Tableau avec fonctions d'éditions/suppressions
+                const tbody = document.getElementById('table-body');
+                tbody.innerHTML = '';
+                ventesInversees.forEach(v => {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
+                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
+                            <td class="px-6 py-4 font-bold text-white">${v.client}</td>
+                            <td class="px-6 py-4 text-gray-400 font-medium">${v.furious || v.description || ''}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.tarif || v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="px-6 py-4 text-center">
+                                <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer" title="Supprimer cette affaire">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                // Graphique évolution
+                if (chartInstance) chartInstance.destroy();
+                const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
+                chartInstance = new Chart(document.getElementById('monthlyChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: activeMonths,
+                        datasets: [{
+                            label: 'CA (€)',
+                            data: activeMonths.map(m => monthlyData[m]),
+                            backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
         }
 
-        function goToForm() {
-            document.getElementById('dashboard-screen').classList.add('hidden');
-            document.getElementById('form-screen').classList.remove('hidden');
-            document.getElementById('status-message').classList.add('hidden');
-            document.getElementById('form-date').valueAsDate = new Date();
-        }
+        // --- ACTION SOUUMISSION FORMULAIRE (CRÉATION OU MODIFICATION) ---
+        document.getElementById('insert-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const targetId = document.getElementById('form-id').value;
 
-        async function fetchEntries() {
-            const tbody = document.getElementById('table-body');
-            if (!supabaseClient) return;
+            const payload = {
+                date: document.getElementById('form-date').value,
+                client: document.getElementById('form-client').value,
+                furious: document.getElementById('form-furious').value,
+                tarif: parseFloat(document.getElementById('form-tarif').value),
+                source: document.getElementById('form-source').value
+            };
 
-            const { data, error } = await supabaseClient
-                .from('mes_notes')
-                .select('date_formation, client, nom_affaire_furious, tarif')
-                .order('id', { ascending: false });
+            let resultError = null;
 
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color:#f25c54;">Erreur : ${error.message}</td></tr>`;
-                return;
-            }
-
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Aucun reporting enregistré.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = data.map(item => {
-                const dateClean = item.date_formation ? new Date(item.date_formation).toLocaleDateString('fr-FR') : 'Non définie';
-                const formatTarif = item.tarif ? Number(item.tarif).toLocaleString('fr-FR') + ' €' : '0 €';
-                return `
-                    <tr>
-                        <td>${dateClean}</td>
-                        <td><strong>${escapeHtml(item.client || '')}</strong></td>
-                        <td>${escapeHtml(item.nom_affaire_furious || '')}</td>
-                        <td style="color: #3ecf8e; font-weight: bold;">${formatTarif}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function sendToSupabase() {
-            const dateVal = document.getElementById('form-date').value;
-            const clientVal = document.getElementById('form-client').value;
-            const furiousVal = document.getElementById('form-furious').value;
-            const tarifVal = document.getElementById('form-tarif').value;
-            const btn = document.getElementById('submit-btn');
-
-            if (!clientVal.trim() || !tarifVal.trim()) {
-                showStatus("Les champs 'Client' et 'Tarif' sont obligatoires.", "error");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "Ajout en cours...";
-
-            const { data, error } = await supabaseClient
-                .from('mes_notes')
-                .insert([{ 
-                    date_formation: dateVal,
-                    client: clientVal,
-                    nom_affaire_furious: furiousVal,
-                    tarif: parseFloat(tarifVal),
-                    contenu: `${clientVal} - ${furiousVal} : ${tarifVal}€`
-                }]);
-
-            btn.disabled = false;
-            btn.innerText = "Valider et ajouter l'entrée";
-
-            if (error) {
-                showStatus("Erreur d'insertion : " + error.message, "error");
+            if (targetId) {
+                // Si présence d'un ID : Mode Modification (UPDATE)
+                const { error } = await supabase.from('mes_notes').update(payload).eq('id', targetId);
+                resultError = error;
             } else {
-                showStatus("Données ajoutées avec succès !", "success");
-                document.getElementById('form-client').value = "";
-                document.getElementById('form-furious').value = "";
-                document.getElementById('form-tarif').value = "";
+                // Si pas d'ID : Mode Création (INSERT)
+                const { error } = await supabase.from('mes_notes').insert([payload]);
+                resultError = error;
             }
-        }
 
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        function showStatus(msg, type) {
-            const statusDiv = document.getElementById('status-message');
-            statusDiv.innerText = msg;
-            statusDiv.className = "status " + type;
-            statusDiv.classList.remove('hidden');
-        }
+            if (!resultError) {
+                document.getElementById('form-success').classList.remove('hidden');
+                if (!targetId) document.getElementById('insert-form').reset();
+            } else {
+                alert("Erreur d'enregistrement : " + resultError.message);
+            }
+        });
     </script>
 </body>
 </html>
