@@ -136,7 +136,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
@@ -172,7 +172,7 @@
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
-            // Enregistrement global du plugin datalabels
+            // Enregistrement global obligatoire du plugin datalabels
             Chart.register(ChartDataLabels);
 
             const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
@@ -252,7 +252,6 @@
                 renderTableRows(filtered);
             });
 
-            // Action de l'export CSV
             btnExportCsv.addEventListener('click', () => {
                 exportToCsv(globalVentes);
             });
@@ -307,7 +306,6 @@
                 }
             });
 
-            // Fonction de tri chronologique intelligent (Décembre 2026 en haut, Janvier 2026 en bas)
             function sortChronologically(list) {
                 return [...list].sort((a, b) => {
                     const dateA = String(a.date || '');
@@ -317,8 +315,8 @@
                     let monthIndexB = -1;
                     
                     monthsOrder.forEach((m, idx) => {
-                        if (dateA.includes(m)) monthIndexA = idx;
-                        if (dateB.includes(m)) monthIndexB = idx;
+                        if (dateA.toLowerCase().includes(m.toLowerCase())) monthIndexA = idx;
+                        if (dateB.toLowerCase().includes(m.toLowerCase())) monthIndexB = idx;
                     });
 
                     const yearA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
@@ -338,7 +336,6 @@
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 
-                // Tri chronologique appliqué systématiquement
                 const sortedList = sortChronologically(list);
                 
                 if (sortedList.length === 0) {
@@ -350,11 +347,12 @@
                     const isEBG = String(v.source).trim().toUpperCase() === 'EBG';
                     const badgeColorClass = isEBG ? 'text-orange-600 bg-orange-50' : 'text-purple-600 bg-purple-50';
 
+                    // Modification cruciale : Ajout de la classe whitespace-nowrap sur la cellule tarif pour bloquer le saut de ligne
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/80 transition-colors border-b border-gray-100 cursor-pointer">
                             <td class="px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
                             <td class="px-6 py-4 font-semibold text-gray-900">${v.client || ''}</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-gray-900">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
                             <td class="px-6 py-4 text-gray-600 max-w-xs truncate">${v.description || ''}</td>
                             <td class="px-6 py-4 text-xs font-semibold">
                                 <span class="px-2.5 py-1 rounded-full ${badgeColorClass}">${v.source || ''}</span>
@@ -365,7 +363,6 @@
                 });
             }
 
-            // Fonction de téléchargement du CSV
             function exportToCsv(list) {
                 if (list.length === 0) {
                     alert("Aucune donnée à exporter.");
@@ -373,8 +370,6 @@
                 }
                 
                 const sortedList = sortChronologically(list);
-                
-                // En-têtes du CSV
                 let csvContent = "Date;Client;Tarif HT (EUR);Description;Source;Affaire Furious\r\n";
                 
                 sortedList.forEach(v => {
@@ -385,10 +380,9 @@
                     const source = (v.source || '').replace(/;/g, ',');
                     const furious = (v.furious || '').replace(/;/g, ',');
                     
-                    csvContent += `"${date}";"${client}";${montant};"${desc}";"${source}";"${furious}"\r\n";`;
+                    csvContent += `"${date}";"${client}";${montant};"${desc}";"${source}";"${furious}"\r\n`;
                 });
                 
-                // Encodage universel avec BOM pour une ouverture parfaite dans Excel (sans bugs d'accents)
                 const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
@@ -417,7 +411,6 @@
                     let totalEBG = 0;
                     let totalDirect = 0;
                     
-                    // Initialisation complète des 12 mois à 0 pour forcer leur affichage complet
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
@@ -446,7 +439,6 @@
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
 
-                    // Agrégation pour le podium
                     ventes.forEach(v => {
                         if (v.client) {
                             let cleanClient = v.client.trim();
@@ -476,12 +468,12 @@
 
                     renderTableRows(globalVentes);
 
-                    // 1. Rendu Histogramme d'Évolution Mensuelle (Avec TOUS les 12 mois forcés)
+                    // 1. Rendu Histogramme d'Évolution Mensuelle
                     if (chartInstance) chartInstance.destroy();
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
                         data: {
-                            labels: monthsOrder, // Utilisation de la liste fixe des 12 mois
+                            labels: monthsOrder, 
                             datasets: [{
                                 data: monthsOrder.map(m => monthlyData[m]),
                                 backgroundColor: '#111827', 
@@ -492,9 +484,26 @@
                         options: { 
                             responsive: true, 
                             maintainAspectRatio: false, 
+                            interaction: {
+                                mode: 'nearest',
+                                intersect: true,
+                                axis: 'x'
+                            },
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { enabled: true },
+                                tooltip: { 
+                                    enabled: true,
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                    titleFont: { size: 12, weight: 'bold' },
+                                    bodyFont: { size: 12 },
+                                    padding: 10,
+                                    borderRadius: 8,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
+                                        }
+                                    }
+                                },
                                 datalabels: { display: false } 
                             },
                             scales: {
@@ -524,6 +533,11 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: { padding: { top: 25 } }, 
+                            interaction: {
+                                mode: 'nearest',
+                                intersect: true,
+                                axis: 'x'
+                            },
                             plugins: { 
                                 legend: { display: false },
                                 tooltip: { 
