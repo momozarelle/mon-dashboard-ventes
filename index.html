@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Dashboard Privé</title>
-    <!-- Chargement de la bibliothèque officielle Supabase -->
+    <title>Dashboard Morgan reporting</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-radius; }
-        h1 { font-size: 20px; margin-bottom: 20px; color: #fff; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-box; }
+        h1 { font-size: 20px; margin-bottom: 20px; color: #fff; text-align: center; }
+        .password-container { position: relative; width: 100%; margin-bottom: 15px; }
         input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
-        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; }
+        .password-container input { margin-bottom: 0; padding-right: 40px; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 18px; user-select: none; }
+        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         button:hover { background: #34b27b; }
         .hidden { display: none; }
         .status { font-size: 14px; margin-top: 10px; text-align: center; }
@@ -21,15 +23,16 @@
 </head>
 <body>
 
-    <!-- ÉCRAN 1 : LE MOT DE PASSE -->
     <div id="login-screen" class="card">
-        <h1>Dashboard Privé - Connexion</h1>
-        <input type="password" id="password-input" placeholder="Entrez le mot de passe secret">
+        <h1>Dashboard Morgan reporting</h1>
+        <div class="password-container">
+            <input type="password" id="password-input" placeholder="Entrez le mot de passe secret">
+            <span class="toggle-password" onclick="togglePasswordVisibility()">👁️</span>
+        </div>
         <button onclick="checkPassword()">Accéder au dashboard</button>
         <div id="login-error" class="status error hidden">Mot de passe incorrect.</div>
     </div>
 
-    <!-- ÉCRAN 2 : LE DASHBOARD (MASQUÉ PAR DÉFAUT) -->
     <div id="dashboard-screen" class="card hidden">
         <h1>Ajouter du contenu (Markdown)</h1>
         <textarea id="markdown-input" rows="10" placeholder="Collez votre texte en Markdown ici..."></textarea>
@@ -38,17 +41,28 @@
     </div>
 
     <script>
-        // CONFIGURATION : Remplace ces valeurs par tes propres clés du bloc-notes
         const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        // SÉCURITÉ : Choisis ton mot de passe d'accès en dur pour le moment
+        // Sécurité : Remplace la valeur ci-dessous par ton mot de passe secret
         const SECRET_PASSWORD = "Ytqywa613%%"; 
 
-        // Initialisation du client Supabase
-        const supabase = sysSupabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialisation corrigée du client Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Fonction de vérification du mot de passe
+        // Fonction pour basculer la visibilité du mot de passe (œil)
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password-input');
+            const toggleIcon = document.querySelector('.toggle-password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.innerText = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.innerText = '👁️';
+            }
+        }
+
         function checkPassword() {
             const input = document.getElementById('password-input').value;
             const errorDiv = document.getElementById('login-error');
@@ -61,10 +75,8 @@
             }
         }
 
-        // Fonction d'envoi de la donnée brute
         async function sendToSupabase() {
             const markdownText = document.getElementById('markdown-input').value;
-            const statusDiv = document.getElementById('status-message');
             const btn = document.getElementById('submit-btn');
 
             if (!markdownText.trim()) {
@@ -72,16 +84,13 @@
                 return;
             }
 
-            // Désactivation du bouton pendant l'envoi
             btn.disabled = true;
             btn.innerText = "Envoi en cours...";
 
-            // Insertion de la ligne dans la colonne 'contenu' de la table 'mes_notes'
             const { data, error } = await supabase
                 .from('mes_notes')
                 .insert([{ contenu: markdownText }]);
 
-            // Réactivation du bouton
             btn.disabled = false;
             btn.innerText = "Pousser dans Supabase";
 
@@ -89,7 +98,7 @@
                 showStatus("Erreur : " + error.message, "error");
             } else {
                 showStatus("Données envoyées avec succès !", "success");
-                document.getElementById('markdown-input').value = ""; // Vide la zone de texte
+                document.getElementById('markdown-input').value = "";
             }
         }
 
