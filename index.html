@@ -21,9 +21,9 @@
                 <div class="relative">
                     <input type="password" id="auth-password" placeholder="Mot de passe" 
                            class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 top-3.5 text-gray-500 hover:text-gray-300 text-sm">👁️</button>
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 top-3.5 text-gray-500 hover:text-gray-300 text-sm cursor-pointer">👁️</button>
                 </div>
-                <button id="btn-login" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+                <button type="button" id="btn-login" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
@@ -172,9 +172,10 @@
             }
         });
 
-        // Connexion
-        document.getElementById('btn-login').addEventListener('click', () => {
-            if (passwordInput.value === '1234') {
+        // Connexion sécurisée
+        document.getElementById('btn-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (passwordInput.value.trim() === '1234') {
                 document.getElementById('auth-error').classList.add('hidden');
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
@@ -183,7 +184,14 @@
             }
         });
 
-        // Actions Boutons Navigation (Mode Création)
+        // Validation en pressant Entrée
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-login').click();
+            }
+        });
+
+        // Création
         document.getElementById('btn-go-to-form').addEventListener('click', () => {
             document.getElementById('form-id').value = '';
             document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -199,7 +207,7 @@
             fetchAndRenderDashboard();
         });
 
-        // Mode Modification : Chargement des données dans le formulaire au clic sur la ligne
+        // Modification
         function openEditMode(id) {
             const currentItem = globalVentes.find(v => v.id === id);
             if (!currentItem) return;
@@ -218,9 +226,9 @@
             showScreen('screen-form');
         }
 
-        // Action Suppression d'une affaire
+        // Suppression
         async function deleteItem(event, id) {
-            event.stopPropagation(); // Évite de déclencher l'ouverture de la modification
+            event.stopPropagation();
             if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
 
             const { error } = await supabase.from('mes_notes').delete().eq('id', id);
@@ -231,7 +239,7 @@
             }
         }
 
-        // --- TRAITEMENT ET RENDU DES DONNÉES ---
+        // --- EXÉCUTION & RENDU ---
         async function fetchAndRenderDashboard() {
             try {
                 const { data: ventes, error } = await supabase.from('mes_notes').select('*');
@@ -243,8 +251,6 @@
                 }
 
                 globalVentes = ventes;
-
-                // Tri inverse (plus récent en premier)
                 const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 let totalCA = 0;
@@ -275,7 +281,6 @@
                     }
                 });
 
-                // Top 3 Clients exact
                 const topClients = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
                 document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
@@ -284,7 +289,6 @@
                 document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
                 document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
 
-                // Affichage Top 3
                 const topList = document.getElementById('top-clients-list');
                 topList.innerHTML = '';
                 const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
@@ -300,7 +304,6 @@
                     `);
                 });
 
-                // Remplissage Tableau avec fonctions d'éditions/suppressions
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 ventesInversees.forEach(v => {
@@ -311,13 +314,12 @@
                             <td class="px-6 py-4 text-gray-400 font-medium">${v.furious || v.description || ''}</td>
                             <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.tarif || v.montant || 0).toLocaleString('fr-FR')} €</td>
                             <td class="px-6 py-4 text-center">
-                                <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer" title="Supprimer cette affaire">🗑️</button>
+                                <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
                             </td>
                         </tr>
                     `);
                 });
 
-                // Graphique évolution
                 if (chartInstance) chartInstance.destroy();
                 const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                 chartInstance = new Chart(document.getElementById('monthlyChart'), {
@@ -339,7 +341,7 @@
             }
         }
 
-        // --- ACTION SOUUMISSION FORMULAIRE (CRÉATION OU MODIFICATION) ---
+        // --- FORMULAIRE ACTION ---
         document.getElementById('insert-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetId = document.getElementById('form-id').value;
@@ -355,11 +357,9 @@
             let resultError = null;
 
             if (targetId) {
-                // Si présence d'un ID : Mode Modification (UPDATE)
                 const { error } = await supabase.from('mes_notes').update(payload).eq('id', targetId);
                 resultError = error;
             } else {
-                // Si pas d'ID : Mode Création (INSERT)
                 const { error } = await supabase.from('mes_notes').insert([payload]);
                 resultError = error;
             }
