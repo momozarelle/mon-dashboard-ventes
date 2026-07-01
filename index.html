@@ -424,7 +424,7 @@
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium (Avec infobulles activées au survol)
+                    // 2. Rendu Histogramme Podium (Avec forçage d'intersection pour activer le survol)
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     
                     const chartLabelsPlugin = {
@@ -464,13 +464,24 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            // Correction : Forcer le mode de détection pour contourner le masquage de l'axe Y
+                            interaction: {
+                                mode: 'nearest',
+                                intersect: true,
+                                axis: 'x'
+                            },
                             plugins: { 
                                 legend: { display: false },
                                 tooltip: { 
-                                    enabled: true, // Activation de l'infobulle au survol
+                                    enabled: true,
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                    titleFont: { size: 12, weight: 'bold' },
+                                    bodyFont: { size: 12 },
+                                    padding: 10,
+                                    borderRadius: 8,
                                     callbacks: {
                                         label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
+                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
                                         }
                                     }
                                 } 
