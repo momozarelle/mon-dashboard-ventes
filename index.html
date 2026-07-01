@@ -4,110 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Morgan 2026</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased min-h-screen">
+<body class="bg-[#F9FAFB] text-[#111827] font-sans antialiased min-h-screen selection:bg-black selection:text-white">
 
-    <!-- 1. ÉCRAN DE CONNEXION -->
-    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6">
-        <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md text-center">
-            <h2 class="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-6">
+    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-[#F3F4F6]">
+        <div class="bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm w-full max-w-md text-center">
+            <h2 class="text-2xl font-semibold tracking-tight text-gray-900 mb-6">
                 Reporting Morgan 2026
             </h2>
             
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer bg-transparent border-none outline-none select-none z-30">👁️</button>
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono tracking-widest transition-all">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-gray-600 text-lg cursor-pointer bg-transparent border-none outline-none select-none z-30">👁️</button>
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+                <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
                     Se connecter
                 </button>
-                <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
+                <p id="auth-error" class="text-xs text-red-500 hidden mt-2">Mot de passe incorrect</p>
             </form>
         </div>
     </div>
 
-    <!-- 2. ÉCRAN PRINCIPAL (DASHBOARD) -->
-    <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-10 hidden">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
+    <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-12 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div>
-                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
+                <h1 class="text-3xl font-semibold tracking-tight text-gray-900">
                     Reporting Morgan 2026
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">Brainsonic AI</p>
+                <p class="text-sm text-gray-500 mt-1">Brainsonic AI</p>
             </div>
             <div class="flex items-center gap-4">
-                <button id="btn-logout" class="text-xs text-gray-500 hover:text-red-400 transition-colors cursor-pointer">Déconnexion</button>
-                <button id="btn-go-to-form" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-cyan-400/20 transition-all cursor-pointer">
+                <button id="btn-logout" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Déconnexion</button>
+                <button id="btn-go-to-form" class="bg-gray-900 hover:bg-black text-white text-xs font-medium px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer">
                     Push Supabase
                 </button>
             </div>
         </div>
 
-        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
-                <p id="kpi-total" class="text-3xl font-black text-white mt-2 font-mono">0 € HT</p>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA TOTAL</p>
+                <p id="kpi-total" class="text-3xl font-semibold text-gray-900 mt-2 font-mono">0 € HT</p>
             </div>
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">APPORT EBG</p>
-                <p id="kpi-ebg" class="text-3xl font-black text-indigo-400 mt-2 font-mono">0 €</p>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">APPORT EBG</p>
+                <p id="kpi-ebg" class="text-3xl font-semibold text-indigo-600 mt-2 font-mono">0 €</p>
                 <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
-                <p id="kpi-direct" class="text-3xl font-black text-cyan-400 mt-2 font-mono">0 €</p>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
+                <p id="kpi-direct" class="text-3xl font-semibold text-teal-600 mt-2 font-mono">0 €</p>
                 <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
         </div>
 
-        <!-- Section Graphiques & Top Clients -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
-                <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs lg:col-span-2">
+                <h3 class="text-sm font-semibold text-gray-800 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
                 <div class="h-64"><canvas id="monthlyChart"></canvas></div>
             </div>
             
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 flex flex-col justify-between">
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs flex flex-col justify-between">
                 <div>
-                    <h3 class="text-base font-bold text-gray-200 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
-                    <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
+                    <h3 class="text-sm font-semibold text-gray-800 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
+                    <p class="text-xs text-gray-400 mb-4">Hors apporteur d'affaires EBG</p>
                 </div>
-                <div id="top-clients-list" class="space-y-4 my-auto">
-                    <!-- Rempli en JS -->
-                </div>
+                <div id="top-clients-list" class="space-y-3 my-auto w-full">
+                    </div>
                 <div></div>
             </div>
         </div>
 
-        <!-- Tableau des data - Ordre strict validé + Bouton Loupe Senior -->
-        <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
-            <div class="px-6 py-5 border-b border-gray-800/80 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-900/20 gap-4">
+        <div class="bg-white rounded-2xl border border-gray-200/60 overflow-hidden shadow-xs">
+            <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50/50 gap-4">
                 <div class="flex items-center gap-3">
-                    <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
-                    <!-- Bouton Loupe discret -->
-                    <button id="btn-toggle-search" class="text-gray-400 hover:text-white text-sm transition-colors cursor-pointer" title="Rechercher une affaire">🔍</button>
+                    <h3 class="text-sm font-semibold text-gray-800 tracking-wide">Détail affaires</h3>
+                    <button id="btn-toggle-search" class="text-gray-400 hover:text-gray-900 text-sm transition-colors cursor-pointer" title="Rechercher une affaire">🔍</button>
                 </div>
-                <!-- Zone de recherche extensible masquée par défaut -->
                 <div id="search-container" class="hidden w-full sm:w-64 transition-all duration-300">
                     <input type="text" id="table-search" placeholder="Filtrer par client, furious..." 
-                           class="w-full bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-500 text-white placeholder-gray-500">
+                           class="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs">
                 </div>
-                <p id="search-hint" class="text-xs text-gray-500 sm:ml-auto">Cliquez sur une ligne pour la modifier ou l'effacer</p>
+                <p id="search-hint" class="text-xs text-gray-400 sm:ml-auto">Cliquez sur une ligne pour la modifier ou l'effacer</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase font-bold tracking-wider bg-gray-900/40">
+                        <tr class="border-b border-gray-200 text-gray-400 text-xs uppercase font-medium tracking-wider bg-gray-50/70">
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
                             <th class="px-6 py-4 text-right">Tarif</th>
@@ -116,69 +104,66 @@
                             <th class="px-6 py-4">Affaire Furious</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
-                        <!-- Rempli en JS -->
-                    </tbody>
+                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm text-gray-700">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- 3. ÉCRAN FORMULAIRE DE SAISIE -->
-    <div id="screen-form" class="max-w-2xl mx-auto px-6 py-10 hidden">
-        <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                <h2 id="form-title" class="text-xl font-bold text-white tracking-wide">Nouvelle Entrée Supabase</h2>
-                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">Retour au dashboard</button>
+    <div id="screen-form" class="max-w-2xl mx-auto px-6 py-12 hidden">
+        <div class="bg-white p-8 rounded-2xl border border-gray-200/60 shadow-sm">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                <h2 id="form-title" class="text-lg font-semibold text-gray-900 tracking-wide">Nouvelle Entrée Supabase</h2>
+                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Retour au dashboard</button>
             </div>
 
             <form id="insert-form" class="space-y-5">
                 <input type="hidden" id="form-id">
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Date / Période de la formation</label>
-                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026 ou 2026-01-15" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Date / Période de la formation</label>
+                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026 ou 2026-01-15" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
-                    <input type="text" id="form-client" placeholder="Ex: BMW GROUPE" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
+                    <input type="text" id="form-client" placeholder="Ex: BMW GROUPE" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white"></textarea>
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
+                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Source d'apport</label>
-                    <select id="form-source" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Source d'apport</label>
+                    <select id="form-source" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
                         <option value="EBG">EBG</option>
                         <option value="Brainsonic">Brainsonic</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
-                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
                 </div>
 
-                <div class="flex gap-4 pt-2">
-                    <button type="button" id="btn-delete-form" class="hidden flex-1 bg-red-950/40 hover:bg-red-900/40 text-red-400 border border-red-900/50 font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer">
+                <div class="flex gap-4 pt-4">
+                    <button type="button" id="btn-delete-form" class="hidden flex-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-medium py-3 px-4 rounded-xl text-sm transition-all cursor-pointer">
                         Supprimer la ligne
                     </button>
-                    <button type="submit" id="btn-submit-form" class="flex-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
+                    <button type="submit" id="btn-submit-form" class="flex-2 bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
                         Enregistrer la ligne
                     </button>
                 </div>
             </form>
-            <div id="form-success-container" class="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center hidden">
-                <p id="form-success" class="text-xs text-emerald-400 font-bold">Ligne enregistrée ! Redirection vers le dashboard...</p>
+            <div id="form-success-container" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-center hidden">
+                <p id="form-success" class="text-xs text-green-600 font-medium">Ligne enregistrée ! Redirection vers le dashboard...</p>
             </div>
         </div>
     </div>
 
-    <!-- LOGIQUE LOGICIELLE DE HAUTE FIABILITÉ -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
@@ -241,7 +226,6 @@
                 showScreen('screen-auth');
             });
 
-            // Basculer l'affichage de la zone de recherche (Loupe)
             document.getElementById('btn-toggle-search').addEventListener('click', () => {
                 if (searchContainer.classList.contains('hidden')) {
                     searchContainer.classList.remove('hidden');
@@ -249,19 +233,16 @@
                 } else {
                     searchContainer.classList.add('hidden');
                     searchInput.value = '';
-                    renderTableRows(globalVentes); // Reset filtre
+                    renderTableRows(globalVentes);
                 }
             });
 
-            // Écouteur sur la recherche en temps réel (Live filtering)
             searchInput.addEventListener('input', () => {
                 const query = searchInput.value.toLowerCase().trim();
-                
                 if (!query) {
                     renderTableRows(globalVentes);
                     return;
                 }
-
                 const filtered = globalVentes.filter(v => {
                     return (v.client && v.client.toLowerCase().includes(query)) ||
                            (v.furious && v.furious.toLowerCase().includes(query)) ||
@@ -269,7 +250,6 @@
                            (v.source && v.source.toLowerCase().includes(query)) ||
                            (v.date && String(v.date).toLowerCase().includes(query));
                 });
-
                 renderTableRows(filtered);
             });
 
@@ -323,34 +303,29 @@
                 }
             });
 
-            // Injection et construction découplée des lignes pour le filtrage live
-            function renderTableRows(dataArray) {
+            function renderTableRows(list) {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
+                const sortedList = [...list].sort((a, b) => new Date(b.date) - new Date(a.date));
                 
-                // Tri par ID décroissant pour l'ordre d'insertion inverse
-                const sorted = [...dataArray].sort((a, b) => b.id - a.id);
-
-                if (sorted.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Aucune affaire ne correspond à la recherche</td></tr>';
+                if (sortedList.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
                     return;
                 }
-
-                sorted.forEach(v => {
+                sortedList.forEach(v => {
                     tbody.insertAdjacentHTML('beforeend', `
-                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
-                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
-                            <td class="px-6 py-4 font-bold text-white">${v.client || ''}</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/80 transition-colors border-b border-gray-100 cursor-pointer">
+                            <td class="px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
+                            <td class="px-6 py-4 font-semibold text-gray-900">${v.client || ''}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-gray-900">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="px-6 py-4 text-gray-500 font-normal">${v.furious || ''}</td>
                             <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
-                            <td class="px-6 py-4 font-semibold text-xs ${v.source === 'EBG' ? 'text-indigo-400' : 'text-cyan-400'}">${v.source || ''}</td>
-                            <td class="px-6 py-4 text-gray-300 font-mono text-xs">${v.furious || ''}</td>
+                            <td class="px-6 py-4 text-xs font-semibold ${v.source === 'EBG' ? 'text-indigo-600' : 'text-teal-600'}">${v.source || ''}</td>
                         </tr>
                     `);
                 });
             }
 
-            // --- REQUÊTE BASE DE DONNÉES ---
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
@@ -359,7 +334,7 @@
                         document.getElementById('kpi-total').innerText = "0 € HT";
                         document.getElementById('kpi-ebg').innerText = "0 € HT";
                         document.getElementById('kpi-direct').innerText = "0 € HT";
-                        document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Aucune affaire trouvée</td></tr>';
+                        document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
                         return;
                     }
 
@@ -369,6 +344,7 @@
                     let totalEBG = 0;
                     let totalDirect = 0;
                     
+                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
@@ -407,20 +383,17 @@
 
                     const topList = document.getElementById('top-clients-list');
                     topList.innerHTML = '';
-                    const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
+                    const colors = ['bg-gradient-to-r from-blue-500 to-indigo-600 text-white', 'bg-gray-100 text-gray-800', 'bg-gray-50 text-gray-700'];
+                    
                     topClients.forEach((client, idx) => {
                         topList.insertAdjacentHTML('beforeend', `
-                            <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
-                                    <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
-                                </div>
-                                <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
+                            <div class="${colors[idx]} p-3.5 rounded-xl border border-gray-200/40 flex justify-between items-center shadow-2xs">
+                                <p class="text-sm font-medium tracking-wide">${client[0]}</p>
+                                <p class="text-sm font-mono font-bold">${client[1].toLocaleString('fr-FR')} €</p>
                             </div>
                         `);
                     });
 
-                    // Rendu initial du tableau complet
                     renderTableRows(globalVentes);
 
                     if (chartInstance) chartInstance.destroy();
@@ -430,10 +403,10 @@
                         data: {
                             labels: activeMonths,
                             datasets: [{
-                                label: 'CA (€)',
                                 data: activeMonths.map(m => monthlyData[m]),
-                                backgroundColor: 'rgba(6, 182, 212, 0.85)',
-                                borderRadius: 6
+                                backgroundColor: '#111827',
+                                hoverBackgroundColor: '#000000',
+                                borderRadius: 4
                             }]
                         },
                         options: { 
@@ -441,8 +414,8 @@
                             maintainAspectRatio: false, 
                             plugins: { legend: { display: false } },
                             scales: {
-                                y: { grid: { color: 'rgba(156, 163, 175, 0.05)' } },
-                                x: { grid: { display: false } }
+                                y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
+                                x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
                             }
                         }
                     });
@@ -452,7 +425,6 @@
                 }
             }
 
-            // --- TRANSMISSION ---
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const targetId = document.getElementById('form-id').value;
