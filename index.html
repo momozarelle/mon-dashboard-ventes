@@ -4,16 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Morgan 2026</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#F9FAFB] text-[#111827] font-sans antialiased min-h-screen selection:bg-black selection:text-white">
 
-    <!-- 1. ÉCRAN DE CONNEXION -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-[#F3F4F6]">
         <div class="bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm w-full max-w-md text-center">
             <h2 class="text-2xl font-black tracking-tight text-gray-900 mb-6">
@@ -34,9 +30,7 @@
         </div>
     </div>
 
-    <!-- 2. ÉCRAN PRINCIPAL (DASHBOARD) -->
     <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-12 hidden">
-        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-gray-900">
@@ -52,7 +46,6 @@
             </div>
         </div>
 
-        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA Morgan</p>
@@ -70,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Section Graphiques & Top 3 Podium Chart -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs lg:col-span-2">
                 <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
@@ -81,7 +73,6 @@
                 <div>
                     <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
                 </div>
-                <!-- Graphique Podium Dédié -->
                 <div class="h-64 relative w-full">
                     <canvas id="topClientsPodiumChart"></canvas>
                 </div>
@@ -89,13 +80,11 @@
             </div>
         </div>
 
-        <!-- Tableau des data -->
         <div class="bg-white rounded-2xl border border-gray-200/60 overflow-hidden shadow-xs">
             <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50/50 gap-4">
                 <div class="flex items-center gap-3">
-                    <h3 class="text-sm font-bold text-gray-900 tracking-wide">Détail affaires</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 tracking-wide">Détail affaires</h3>
                 </div>
-                <!-- Barre "Rechercher" Épurée ChatGPT style -->
                 <div class="relative w-full sm:w-72">
                     <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
                     <input type="text" id="table-search" placeholder="Rechercher (client, furious, description...)" 
@@ -105,7 +94,6 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <!-- En-tête text-gray-950 pour forcer les titres en noir opaque -->
                         <tr class="border-b border-gray-200 text-gray-950 text-xs uppercase font-bold tracking-wider bg-gray-50/70">
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
@@ -116,14 +104,12 @@
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-100 text-sm text-gray-700">
-                        <!-- Rempli en JS -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- 3. ÉCRAN FORMULAIRE DE SAISIE -->
     <div id="screen-form" class="max-w-2xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-2xl border border-gray-200/60 shadow-sm">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
@@ -144,7 +130,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
@@ -177,7 +163,6 @@
         </div>
     </div>
 
-    <!-- LOGIQUE LOGICIELLE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
@@ -387,28 +372,31 @@
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
 
-                    // Préparation des données Podium : Ordre classique #2, #1, #3
                     const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
                     
                     let podiumLabels = ['-', '-', '-'];
                     let podiumData = [0, 0, 0];
+                    let rawPodiumAmounts = [0, 0, 0]; // Stockage brut des nombres pour l'affichage du plugin
                     
-                    if (topClientsSorted[0]) { // #1
+                    if (topClientsSorted[0]) { 
                         podiumLabels[1] = '#1 ' + topClientsSorted[0][0];
                         podiumData[1] = topClientsSorted[0][1];
+                        rawPodiumAmounts[1] = topClientsSorted[0][1];
                     }
-                    if (topClientsSorted[1]) { // #2
+                    if (topClientsSorted[1]) { 
                         podiumLabels[0] = '#2 ' + topClientsSorted[1][0];
                         podiumData[0] = topClientsSorted[1][1];
+                        rawPodiumAmounts[0] = topClientsSorted[1][1];
                     }
-                    if (topClientsSorted[2]) { // #3
+                    if (topClientsSorted[2]) { 
                         podiumLabels[2] = '#3 ' + topClientsSorted[2][0];
                         podiumData[2] = topClientsSorted[2][1];
+                        rawPodiumAmounts[2] = topClientsSorted[2][1];
                     }
 
                     renderTableRows(globalVentes);
 
-                    // 1. Rendu Histogramme d'Évolution Mensuelle
+                    // 1. Rendu Histogramme d'Évolution Mensuelle (Barres passées en noir profond + tooltips actifs)
                     if (chartInstance) chartInstance.destroy();
                     const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
@@ -416,40 +404,41 @@
                         data: {
                             labels: activeMonths,
                             datasets: [{
-                                label: 'CA (€)',
                                 data: activeMonths.map(m => monthlyData[m]),
-                                backgroundColor: '#10B981',
-                                hoverBackgroundColor: '#059669',
-                                borderRadius: 6
+                                backgroundColor: '#111827', // Noir profond Apple/ChatGPT
+                                hoverBackgroundColor: '#000000',
+                                borderRadius: 4
                             }]
                         },
                         options: { 
                             responsive: true, 
                             maintainAspectRatio: false, 
-                            plugins: { legend: { display: false } },
+                            plugins: { 
+                                legend: { display: false },
+                                tooltip: { enabled: true } // Activation explicite du montant agrégé au survol
+                            },
                             scales: {
                                 y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
-                                x: { grid: { display: false } }
+                                x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
                             }
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium (Avec valeurs chiffrées au-dessus)
+                    // 2. Rendu Histogramme Podium (Avec valeurs réelles chiffrées lues dynamiquement depuis rawPodiumAmounts)
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     
-                    // Plugin pour injecter les prix au-dessus des barres du podium
                     const chartLabelsPlugin = {
                         id: 'chartLabelsPlugin',
                         afterDatasetsDraw(chart) {
-                            const { ctx, data } = chart;
+                            const { ctx } = chart;
                             ctx.save();
                             ctx.font = 'bold 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-                            ctx.fillStyle = '#1F2937';
+                            ctx.fillStyle = '#111827';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'bottom';
 
                             chart.metasets[0].data.forEach((bar, index) => {
-                                const value = data.datasets[0].data[index];
+                                const value = rawPodiumAmounts[index];
                                 if (value > 0) {
                                     ctx.fillText(`${value.toLocaleString('fr-FR')} €`, bar.x, bar.y - 6);
                                 }
@@ -464,7 +453,7 @@
                             labels: podiumLabels,
                             datasets: [{
                                 data: podiumData,
-                                backgroundColor: ['#E5E7EB', '#1F2937', '#F3F4F6'],
+                                backgroundColor: ['#E5E7EB', '#111827', '#F3F4F6'],
                                 borderColor: ['#D1D5DB', '#111827', '#E5E7EB'],
                                 borderWidth: 1,
                                 borderRadius: 8,
@@ -474,7 +463,10 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
+                            plugins: { 
+                                legend: { display: false },
+                                tooltip: { enabled: false } // Masqué sur le podium pour laisser place aux étiquettes fixes
+                            },
                             layout: { padding: { top: 25 } }, 
                             scales: {
                                 y: { display: false, grid: { display: false } },
