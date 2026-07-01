@@ -8,22 +8,29 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Ajustements fins pour coller au style Claude (police et lissage) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
 </head>
-<body class="bg-[#F9FAFB] text-[#111827] font-sans antialiased min-h-screen selection:bg-black selection:text-white">
+<body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100">
 
-    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-[#F3F4F6]">
-        <div class="bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm w-full max-w-md text-center">
-            <h2 class="text-2xl font-black tracking-tight text-gray-900 mb-6">
+    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/50">
+        <div class="bg-white p-8 rounded-xl border border-gray-200/80 shadow-xs w-full max-w-sm text-center">
+            <h2 class="text-xl font-medium tracking-tight text-gray-900 mb-6">
                 Reporting Morgan 2026
             </h2>
             
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono tracking-widest transition-all">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-gray-600 text-lg cursor-pointer bg-transparent border-none outline-none select-none z-30">👁️</button>
+                           class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-3 text-gray-400 hover:text-gray-600 text-sm cursor-pointer select-none">👁️</button>
                 </div>
-                <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
+                <button type="submit" class="w-full bg-[#191919] hover:bg-black text-white text-sm py-2 px-4 rounded-lg transition-all cursor-pointer">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-500 hidden mt-2">Mot de passe incorrect</p>
@@ -31,148 +38,145 @@
         </div>
     </div>
 
-    <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-12 hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
+    <div id="screen-dashboard" class="max-w-6xl mx-auto px-6 py-12 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 border-b border-gray-100 pb-6 gap-4">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-gray-900">
+                <h1 class="text-2xl font-normal tracking-tight text-gray-900">
                     Reporting Morgan 2026
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">Brainsonic AI</p>
+                <p class="text-xs text-gray-400 mt-0.5">Brainsonic AI</p>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="btn-logout" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Déconnexion</button>
-                <button id="btn-go-to-form" class="bg-gray-900 hover:bg-black text-white text-xs font-medium px-6 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer">
+            <div class="flex items-center gap-3">
+                <button id="btn-logout" class="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">Déconnexion</button>
+                <button id="btn-go-to-form" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">
                     Push
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA Morgan</p>
-                <p id="kpi-total" class="text-3xl font-bold text-emerald-600 mt-2 font-mono">0 € HT</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="border border-gray-100 p-5 rounded-xl bg-white">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA Morgan</p>
+                <p id="kpi-total" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Via EBG</p>
-                <p id="kpi-ebg" class="text-3xl font-bold text-orange-500 mt-2 font-mono">0 € HT</p>
-                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
+            <div class="border border-gray-100 p-5 rounded-xl bg-white">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Via EBG</p>
+                <p id="kpi-ebg" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
+                <p id="pct-ebg" class="text-xs text-gray-400 mt-0.5">0% du total</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Direct Brainsonic</p>
-                <p id="kpi-direct" class="text-3xl font-bold text-purple-600 mt-2 font-mono">0 € HT</p>
-                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
+            <div class="border border-gray-100 p-5 rounded-xl bg-white">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Direct Brainsonic</p>
+                <p id="kpi-direct" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
+                <p id="pct-direct" class="text-xs text-gray-400 mt-0.5">0% du total</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs lg:col-span-2">
-                <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
-                <div class="h-64"><canvas id="monthlyChart"></canvas></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="border border-gray-100 p-5 rounded-xl bg-white lg:col-span-2">
+                <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Évolution Mensuelle du CA (€ HT)</h3>
+                <div class="h-60"><canvas id="monthlyChart"></canvas></div>
             </div>
             
-            <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs flex flex-col justify-between">
+            <div class="border border-gray-100 p-5 rounded-xl bg-white flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
+                    <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Top 3 Clients (CA Cumulé)</h3>
                 </div>
-                <div class="h-64 relative w-full">
+                <div class="h-60 relative w-full">
                     <canvas id="topClientsPodiumChart"></canvas>
                 </div>
                 <div></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-gray-200/60 overflow-hidden shadow-xs">
-            <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50/50 gap-4">
-                <div class="flex items-center gap-3">
-                    <h3 class="text-sm font-semibold text-gray-900 tracking-wide">Détail affaires</h3>
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden mb-12">
+            <div class="py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-900">Détail des affaires</h3>
                 </div>
-                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                    <div class="relative w-full sm:w-72">
-                        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
-                        <input type="text" id="table-search" placeholder="Rechercher (client, furious, description...)" 
-                               class="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 text-gray-900 placeholder-gray-400 shadow-2xs transition-all">
+                <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="table-search" placeholder="Rechercher..." 
+                               class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-1.5 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 placeholder-gray-400 transition-all">
                     </div>
-                    <button id="btn-export-csv" class="bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold px-4 py-2 border border-gray-200 rounded-xl transition-all shadow-2xs cursor-pointer flex items-center gap-1.5">
-                        📥 Export CSV
+                    <button id="btn-export-csv" class="border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1">
+                        Export CSV
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-200 text-gray-950 text-xs uppercase font-bold tracking-wider bg-gray-50/70">
-                            <th class="px-6 py-4">Date</th>
-                            <th class="px-6 py-4">Client</th>
-                            <th class="px-6 py-4 text-right">Tarif</th>
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4">Source</th>
-                            <th class="px-6 py-4">Affaire Furious</th>
+                        <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium tracking-wider">
+                            <th class="py-3 pr-4 font-medium">Date</th>
+                            <th class="py-3 px-4 font-medium">Client</th>
+                            <th class="py-3 px-4 text-right font-medium">Tarif</th>
+                            <th class="py-3 px-4 font-medium">Description</th>
+                            <th class="py-3 px-4 font-medium">Source</th>
+                            <th class="py-3 pl-4 font-medium">Affaire Furious</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm text-gray-700">
+                    <tbody id="table-body" class="divide-y divide-gray-100 text-xs text-gray-700">
                         </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="screen-form" class="max-w-2xl mx-auto px-6 py-12 hidden">
-        <div class="bg-white p-8 rounded-2xl border border-gray-200/60 shadow-sm">
+    <div id="screen-form" class="max-w-xl mx-auto px-6 py-12 hidden">
+        <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-                <h2 id="form-title" class="text-lg font-semibold text-gray-900 tracking-wide">Nouvelle Entrée Supabase</h2>
-                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Retour au dashboard</button>
+                <h2 id="form-title" class="text-base font-medium text-gray-900">Nouvelle Entrée</h2>
+                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">Retour</button>
             </div>
 
             <form id="insert-form" class="space-y-5">
                 <input type="hidden" id="form-id">
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Date / Période de la formation</label>
-                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026 ou 2026-01-15" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Date / Période</label>
+                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
-                    <input type="text" id="form-client" placeholder="Ex: BMW" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Nom du Client</label>
+                    <input type="text" id="form-client" placeholder="Ex: BMW" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 font-mono transition-all">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Tarif (€ HT)</label>
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Description</label>
-                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all"></textarea>
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Description</label>
+                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Source d'apport</label>
-                    <select id="form-source" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Source d'apport</label>
+                    <select id="form-source" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                         <option value="EBG">EBG</option>
                         <option value="Brainsonic">Brainsonic</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
-                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Nom de l'affaire Furious</label>
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-2026-BMW" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                 </div>
 
-                <div class="flex gap-4 pt-4">
-                    <button type="button" id="btn-delete-form" class="hidden flex-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-medium py-3 px-4 rounded-xl text-sm transition-all cursor-pointer">
-                        Supprimer la ligne
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="btn-delete-form" class="hidden flex-1 border border-red-200 hover:bg-red-50 text-red-600 py-2 px-4 rounded-lg text-xs transition-all cursor-pointer">
+                        Supprimer
                     </button>
-                    <button type="submit" id="btn-submit-form" class="flex-2 bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
-                        Enregistrer la ligne
+                    <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs transition-all cursor-pointer">
+                        Enregistrer
                     </button>
                 </div>
             </form>
-            <div id="form-success-container" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-center hidden">
-                <p id="form-success" class="text-xs text-green-600 font-medium">Ligne enregistrée ! Redirection vers le dashboard...</p>
+            <div id="form-success-container" class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-lg text-center hidden">
+                <p id="form-success" class="text-xs text-gray-600">Enregistré avec succès.</p>
             </div>
         </div>
     </div>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            
-            // Enregistrement global obligatoire du plugin datalabels
             Chart.register(ChartDataLabels);
 
             const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
@@ -258,8 +262,8 @@
 
             document.getElementById('btn-go-to-form').addEventListener('click', () => {
                 document.getElementById('form-id').value = '';
-                document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
-                document.getElementById('btn-submit-form').innerText = "Enregistrer la ligne";
+                document.getElementById('form-title').innerText = "Nouvelle Entrée";
+                document.getElementById('btn-submit-form').innerText = "Enregistrer";
                 document.getElementById('btn-delete-form').classList.add('hidden');
                 document.getElementById('insert-form').reset();
                 document.getElementById('form-date').value = "Janvier 2026";
@@ -277,8 +281,8 @@
                 if (!currentItem) return;
 
                 document.getElementById('form-id').value = currentItem.id;
-                document.getElementById('form-title').innerText = "Modifier l'affaire";
-                document.getElementById('btn-submit-form').innerText = "Mettre à jour la ligne";
+                document.getElementById('form-title').innerText = "Modifier l'entrée";
+                document.getElementById('btn-submit-form').innerText = "Mettre à jour";
                 document.getElementById('btn-delete-form').classList.remove('hidden');
                 
                 document.getElementById('form-date').value = currentItem.date || '';
@@ -295,14 +299,14 @@
             document.getElementById('btn-delete-form').addEventListener('click', async () => {
                 const id = document.getElementById('form-id').value;
                 if (!id) return;
-                if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
+                if (!confirm("Supprimer définitivement cette ligne ?")) return;
 
                 const { error } = await supabase.from('ventes').delete().eq('id', id);
                 if (!error) {
                     showScreen('screen-dashboard');
                     fetchAndRenderDashboard();
                 } else {
-                    alert("Erreur de suppression : " + error.message);
+                    alert("Erreur : " + error.message);
                 }
             });
 
@@ -322,12 +326,8 @@
                     const yearA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
                     const yearB = parseInt(dateB.match(/\d{4}/)?.[0] || '2026');
 
-                    if (yearA !== yearB) {
-                        return yearB - yearA; 
-                    }
-                    if (monthIndexA !== monthIndexB) {
-                        return monthIndexB - monthIndexA; 
-                    }
+                    if (yearA !== yearB) return yearB - yearA; 
+                    if (monthIndexA !== monthIndexB) return monthIndexB - monthIndexA; 
                     return b.id - a.id; 
                 });
             }
@@ -339,39 +339,32 @@
                 const sortedList = sortChronologically(list);
                 
                 if (sortedList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Aucune affaire</td></tr>';
                     return;
                 }
                 
                 sortedList.forEach(v => {
                     const isEBG = String(v.source).trim().toUpperCase() === 'EBG';
-                    const badgeColorClass = isEBG ? 'text-orange-600 bg-orange-50' : 'text-purple-600 bg-purple-50';
+                    // Textes discrets gris foncé sans badges colorés criards style Claude
+                    const textSourceClass = isEBG ? 'text-gray-900 font-medium' : 'text-gray-500';
 
-                    // Modification cruciale : Ajout de la classe whitespace-nowrap sur la cellule tarif pour bloquer le saut de ligne
                     tbody.insertAdjacentHTML('beforeend', `
-                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/80 transition-colors border-b border-gray-100 cursor-pointer">
-                            <td class="px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
-                            <td class="px-6 py-4 font-semibold text-gray-900">${v.client || ''}</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
-                            <td class="px-6 py-4 text-gray-600 max-w-xs truncate">${v.description || ''}</td>
-                            <td class="px-6 py-4 text-xs font-semibold">
-                                <span class="px-2.5 py-1 rounded-full ${badgeColorClass}">${v.source || ''}</span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-500 font-mono text-xs">${v.furious || ''}</td>
+                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/60 transition-colors border-b border-gray-100 cursor-pointer">
+                            <td class="py-3.5 pr-4 text-gray-400 font-mono whitespace-nowrap">${v.date || '-'}</td>
+                            <td class="py-3.5 px-4 font-medium text-gray-900">${v.client || ''}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-medium text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="py-3.5 px-4 text-gray-500 max-w-xs truncate">${v.description || ''}</td>
+                            <td class="py-3.5 px-4 text-xs ${textSourceClass}">${v.source || ''}</td>
+                            <td class="py-3.5 pl-4 text-gray-400 font-mono">${v.furious || ''}</td>
                         </tr>
                     `);
                 });
             }
 
             function exportToCsv(list) {
-                if (list.length === 0) {
-                    alert("Aucune donnée à exporter.");
-                    return;
-                }
-                
+                if (list.length === 0) return;
                 const sortedList = sortChronologically(list);
                 let csvContent = "Date;Client;Tarif HT (EUR);Description;Source;Affaire Furious\r\n";
-                
                 sortedList.forEach(v => {
                     const date = (v.date || '').replace(/;/g, ',');
                     const client = (v.client || '').replace(/;/g, ',');
@@ -379,10 +372,8 @@
                     const desc = (v.description || '').replace(/[\r\n]+/g, ' ').replace(/;/g, ',');
                     const source = (v.source || '').replace(/;/g, ',');
                     const furious = (v.furious || '').replace(/;/g, ',');
-                    
                     csvContent += `"${date}";"${client}";${montant};"${desc}";"${source}";"${furious}"\r\n`;
                 });
-                
                 const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
@@ -396,28 +387,16 @@
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
-
-                    if (error || !ventes || ventes.length === 0) {
-                        document.getElementById('kpi-total').innerText = "0 € HT";
-                        document.getElementById('kpi-ebg').innerText = "0 € HT";
-                        document.getElementById('kpi-direct').innerText = "0 € HT";
-                        document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
-                        return;
-                    }
+                    if (error || !ventes || ventes.length === 0) return;
 
                     globalVentes = ventes;
-
-                    let totalCA = 0;
-                    let totalEBG = 0;
-                    let totalDirect = 0;
-                    
+                    let totalCA = 0, totalEBG = 0, totalDirect = 0;
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
                     ventes.forEach(v => {
                         const valMontant = parseFloat(v.montant || 0);
                         totalCA += valMontant;
-                        
                         if (String(v.source).trim().toUpperCase() === 'EBG') totalEBG += valMontant;
                         if (String(v.source).trim().toUpperCase() === 'BRAINSONIC' || String(v.source).trim().toUpperCase() === 'DIRECT') totalDirect += valMontant;
 
@@ -428,9 +407,7 @@
                                 break;
                             }
                         }
-                        if (monthFound) {
-                            monthlyData[monthFound] += valMontant;
-                        }
+                        if (monthFound) monthlyData[monthFound] += valMontant;
                     });
 
                     document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
@@ -442,33 +419,19 @@
                     ventes.forEach(v => {
                         if (v.client) {
                             let cleanClient = v.client.trim();
-                            if (cleanClient) {
-                                clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + parseFloat(v.montant || 0);
-                            }
+                            if (cleanClient) clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + parseFloat(v.montant || 0);
                         }
                     });
 
                     const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
-                    
-                    let podiumLabels = ['-', '-', '-'];
-                    let podiumData = [0, 0, 0];
-                    
-                    if (topClientsSorted[0]) { 
-                        podiumLabels[1] = '#1 ' + topClientsSorted[0][0];
-                        podiumData[1] = topClientsSorted[0][1];
-                    }
-                    if (topClientsSorted[1]) { 
-                        podiumLabels[0] = '#2 ' + topClientsSorted[1][0];
-                        podiumData[0] = topClientsSorted[1][1];
-                    }
-                    if (topClientsSorted[2]) { 
-                        podiumLabels[2] = '#3 ' + topClientsSorted[2][0];
-                        podiumData[2] = topClientsSorted[2][1];
-                    }
+                    let podiumLabels = ['-', '-', '-'], podiumData = [0, 0, 0];
+                    if (topClientsSorted[0]) { podiumLabels[1] = topClientsSorted[0][0]; podiumData[1] = topClientsSorted[0][1]; }
+                    if (topClientsSorted[1]) { podiumLabels[0] = topClientsSorted[1][0]; podiumData[0] = topClientsSorted[1][1]; }
+                    if (topClientsSorted[2]) { podiumLabels[2] = topClientsSorted[2][0]; podiumData[2] = topClientsSorted[2][1]; }
 
                     renderTableRows(globalVentes);
 
-                    // 1. Rendu Histogramme d'Évolution Mensuelle
+                    // Chart Évolution : Minimaliste, Noir / Gris très clair
                     if (chartInstance) chartInstance.destroy();
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
@@ -476,121 +439,70 @@
                             labels: monthsOrder, 
                             datasets: [{
                                 data: monthsOrder.map(m => monthlyData[m]),
-                                backgroundColor: '#111827', 
+                                backgroundColor: '#191919', 
                                 hoverBackgroundColor: '#000000',
-                                borderRadius: 4
+                                borderRadius: 2
                             }]
                         },
                         options: { 
                             responsive: true, 
                             maintainAspectRatio: false, 
-                            interaction: {
-                                mode: 'nearest',
-                                intersect: true,
-                                axis: 'x'
-                            },
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { 
-                                    enabled: true,
-                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                                    titleFont: { size: 12, weight: 'bold' },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                    borderRadius: 8,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
-                                        }
-                                    }
-                                },
+                                tooltip: { enabled: true, backgroundColor: '#191919', padding: 10, borderRadius: 6 },
                                 datalabels: { display: false } 
                             },
                             scales: {
-                                y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
-                                x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
+                                y: { grid: { color: '#F3F4F6' }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+                                x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
                             }
                         }
                     });
 
-                    // 2. Rendu Histogramme Podium
+                    // Chart Podium : Tons de gris épurés
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
                         type: 'bar',
                         data: {
                             labels: podiumLabels,
                             datasets: [{
-                                label: 'CA Cumulé',
                                 data: podiumData,
-                                backgroundColor: ['#E5E7EB', '#111827', '#F3F4F6'],
-                                borderColor: ['#D1D5DB', '#111827', '#E5E7EB'],
+                                backgroundColor: ['#F3F4F6', '#191919', '#FAFAFA'],
+                                borderColor: ['#E5E7EB', '#191919', '#E5E7EB'],
                                 borderWidth: 1,
-                                borderRadius: 8,
-                                barPercentage: 0.65
+                                borderRadius: 4,
+                                barPercentage: 0.55
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            layout: { padding: { top: 25 } }, 
-                            interaction: {
-                                mode: 'nearest',
-                                intersect: true,
-                                axis: 'x'
-                            },
+                            layout: { padding: { top: 20 } }, 
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { 
-                                    enabled: true,
-                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                                    titleFont: { size: 12, weight: 'bold' },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                    borderRadius: 8,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
-                                        }
-                                    }
-                                },
+                                tooltip: { enabled: true, backgroundColor: '#191919' },
                                 datalabels: {
                                     display: true,
                                     align: 'top',
                                     anchor: 'end',
-                                    offset: 4,
-                                    color: '#111827',
-                                    font: {
-                                        weight: 'bold',
-                                        family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                                        size: 11
-                                    },
-                                    formatter: function(value) {
-                                        return value > 0 ? `${value.toLocaleString('fr-FR')} €` : '';
-                                    }
+                                    color: '#191919',
+                                    font: { size: 10, weight: '500' },
+                                    formatter: function(value) { return value > 0 ? `${value.toLocaleString('fr-FR')} €` : ''; }
                                 }
                             },
                             scales: {
-                                y: { display: false, grid: { display: false } },
-                                x: { 
-                                    grid: { display: false },
-                                    ticks: {
-                                        color: '#111827',
-                                        font: { weight: 'bold', size: 12 }
-                                    }
-                                }
+                                y: { display: false },
+                                x: { grid: { display: false }, ticks: { color: '#191919', font: { size: 11 } } }
                             }
                         }
                     });
 
-                } catch (err) {
-                    console.error(err);
-                }
+                } catch (err) { console.error(err); }
             }
 
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const targetId = document.getElementById('form-id').value;
-
                 const payload = {
                     date: document.getElementById('form-date').value,
                     client: document.getElementById('form-client').value,
@@ -601,7 +513,6 @@
                 };
 
                 let resultError = null;
-
                 if (targetId) {
                     const { error } = await supabase.from('ventes').update(payload).eq('id', targetId);
                     resultError = error;
@@ -612,14 +523,12 @@
 
                 if (!resultError) {
                     document.getElementById('form-success-container').classList.remove('hidden');
-                    if (!targetId) document.getElementById('insert-form').reset();
-                    
                     setTimeout(() => {
                         showScreen('screen-dashboard');
                         fetchAndRenderDashboard();
-                    }, 1200);
+                    }, 1000);
                 } else {
-                    alert("Erreur d'enregistrement : " + resultError.message);
+                    alert("Erreur : " + resultError.message);
                 }
             });
         });
