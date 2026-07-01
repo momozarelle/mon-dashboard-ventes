@@ -6,19 +6,25 @@
     <title>Dashboard Morgan reporting</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/dist/umd/supabase.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-box; }
-        h1 { font-size: 20px; margin-bottom: 20px; color: #fff; text-align: center; }
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 600px; box-sizing: border-box; }
+        h1 { font-size: 22px; margin-bottom: 20px; color: #fff; text-align: center; }
+        h2 { font-size: 16px; margin-top: 25px; margin-bottom: 10px; color: #3ecf8e; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .password-container { position: relative; width: 100%; margin-bottom: 15px; display: flex; align-items: center; }
         input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
         .password-container input { margin-bottom: 0; padding-right: 45px; }
         .toggle-password { position: absolute; right: 12px; cursor: pointer; color: #888; font-size: 18px; user-select: none; z-index: 10; }
-        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; margin-top: 5px; }
         button:hover { background: #34b27b; }
-        .hidden { display: none; }
-        .status { font-size: 14px; margin-top: 10px; text-align: center; }
-        .success { color: #3ecf8e; }
-        .error { color: #f25c54; }
+        .hidden { display: none !important; }
+        .status { font-size: 14px; margin-top: 10px; text-align: center; padding: 8px; border-radius: 4px; }
+        .success { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); }
+        .error { color: #f25c54; background: rgba(242, 92, 84, 0.1); }
+        
+        /* Style de la liste des entrées de reporting */
+        .entries-list { max-height: 250px; overflow-y: auto; margin-top: 10px; padding-right: 5px; }
+        .entry-item { background: #252525; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #3ecf8e; font-size: 13px; white-space: pre-wrap; }
+        .entry-date { color: #888; font-size: 11px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -34,31 +40,38 @@
     </div>
 
     <div id="dashboard-screen" class="card hidden">
-        <h1>Ajouter du contenu (Markdown)</h1>
-        <textarea id="markdown-input" rows="10" placeholder="Collez votre texte en Markdown ici..."></textarea>
+        <h1>Dashboard Morgan reporting</h1>
+        
+        <h2>Nouvelle entrée (Rapport de formation)</h2>
+        <textarea id="markdown-input" rows="6" placeholder="Collez le texte brut ou le Markdown ici..."></textarea>
         <button id="submit-btn" onclick="sendToSupabase()">Pousser dans Supabase</button>
         <div id="status-message" class="status hidden"></div>
+
+        <h2>Historique des entrées en direct</h2>
+        <div id="entries-container" class="entries-list">
+            <div style="color:#888; text-align:center; font-size:13px;">Chargement du flux...</div>
+        </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        // Sécurité : Remplace bien la valeur ci-dessous par ton vrai mot de passe
-        const SECRET_PASSWORD = "TON_MOT_DE_PASSE_ICI"; 
+        // SÉCURITÉ : Remplace la valeur ci-dessous par ton mot de passe d'accès
+        const SECRET_PASSWORD = "Ytqywa613%%"; 
 
         let supabaseClient;
 
-        // On attend que la page et les scripts soient chargés à 100%
+        // Initialisation propre au chargement
         window.addEventListener('load', () => {
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             } else {
-                console.error("Erreur de chargement de la bibliothèque Supabase.");
+                console.error("Erreur critique : Bibliothèque Supabase introuvable.");
             }
         });
 
-        // Fonction œil qui bascule le type du champ et change l'icône
+        // Gestion de l'affichage du mot de passe (œil)
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password-input');
             const toggleIcon = document.querySelector('.toggle-password');
@@ -72,31 +85,62 @@
             }
         }
 
-        // Vérification stricte du mot de passe
+        // Connexion et redirection vers le dashboard
         function checkPassword() {
             const input = document.getElementById('password-input').value;
             const errorDiv = document.getElementById('login-error');
             
             if (input === SECRET_PASSWORD) {
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('remove', 'hidden'); // Nettoyage propre
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                // Dès qu'on est connecté, on charge le dashboard avec l'historique
+                fetchEntries();
             } else {
                 errorDiv.classList.remove('hidden');
             }
         }
 
-        // Envoi des données vers la table Supabase
+        // Récupérer et afficher les données stockées dans Supabase
+        async function fetchEntries() {
+            const container = document.getElementById('entries-container');
+            
+            if (!supabaseClient) return;
+
+            // On trie par id décroissant pour avoir le plus récent en premier
+            const { data, error } = await supabaseClient
+                .from('mes_notes')
+                .select('created_at, contenu')
+                .order('id', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `<div style="color:#f25c54; font-size:13px;">Erreur de flux : ${error.message}</div>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `<div style="color:#888; text-align:center; font-size:13px;">Aucun reporting pour le moment.</div>`;
+                return;
+            }
+
+            // Génération de la liste HTML dynamique
+            container.innerHTML = data.map(item => {
+                const dateClean = new Date(item.created_at).toLocaleString('fr-FR');
+                return `
+                    <div class="entry-item">
+                        <div class="entry-date">Le ${dateClean}</div>
+                        <div>${escapeHtml(item.contenu)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Envoyer la donnée et mettre à jour le dashboard directement
         async function sendToSupabase() {
             const markdownText = document.getElementById('markdown-input').value;
             const btn = document.getElementById('submit-btn');
 
             if (!markdownText.trim()) {
-                showStatus("Le champ est vide.", "error");
-                return;
-            }
-
-            if (!supabaseClient) {
-                showStatus("Erreur : Connexion à Supabase impossible.", "error");
+                showStatus("Le champ est vide. Ajoute du texte avant d'envoyer.", "error");
                 return;
             }
 
@@ -114,8 +158,21 @@
                 showStatus("Erreur : " + error.message, "error");
             } else {
                 showStatus("Données envoyées avec succès !", "success");
-                document.getElementById('markdown-input').value = "";
+                document.getElementById('markdown-input').value = ""; // Vide le champ
+                
+                // ACTION COMPLÈTE ET DIRECTE : On recharge immédiatement le flux visuel
+                fetchEntries();
             }
+        }
+
+        // Sécurisation du texte injecté
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         function showStatus(msg, type) {
