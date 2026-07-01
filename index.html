@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Morgan 2026</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -21,7 +17,6 @@
 </head>
 <body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100">
 
-    <!-- 1. ÉCRAN DE CONNEXION -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/50">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 shadow-xs w-full max-w-sm text-center">
             <h2 class="text-xl font-medium tracking-tight text-gray-900 mb-6">
@@ -42,9 +37,7 @@
         </div>
     </div>
 
-    <!-- 2. ÉCRAN PRINCIPAL (DASHBOARD) -->
     <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-12 hidden">
-        <!-- Header ajusté sur l'image et les 2 lignes de texte -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
                 <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
@@ -67,28 +60,26 @@
             </div>
         </div>
 
-        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div class="border border-gray-100 p-5 rounded-xl bg-white">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA Morgan</p>
-                <p id="kpi-total" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
+                <p id="kpi-total" class="text-2xl font-medium text-gray-900 mt-1">0 €</p>
             </div>
             <div class="border border-gray-100 p-5 rounded-xl bg-white">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Via EBG</p>
-                <p id="kpi-ebg" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
+                <p id="kpi-ebg" class="text-2xl font-medium text-gray-900 mt-1">0 €</p>
                 <p id="pct-ebg" class="text-xs text-gray-400 mt-0.5">0% du total</p>
             </div>
             <div class="border border-gray-100 p-5 rounded-xl bg-white">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Direct Brainsonic</p>
-                <p id="kpi-direct" class="text-2xl font-medium text-gray-900 mt-1">0 € HT</p>
+                <p id="kpi-direct" class="text-2xl font-medium text-gray-900 mt-1">0 €</p>
                 <p id="pct-direct" class="text-xs text-gray-400 mt-0.5">0% du total</p>
             </div>
         </div>
 
-        <!-- Section Graphiques -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
             <div class="border border-gray-100 p-5 rounded-xl bg-white lg:col-span-2">
-                <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Évolution Mensuelle du CA (€ HT)</h3>
+                <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Évolution Mensuelle du CA (€)</h3>
                 <div class="h-60"><canvas id="monthlyChart"></canvas></div>
             </div>
             
@@ -103,7 +94,6 @@
             </div>
         </div>
 
-        <!-- Tableau des data -->
         <div class="bg-white rounded-xl border border-gray-100 overflow-hidden mb-12">
             <div class="py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
@@ -132,14 +122,12 @@
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-100 text-xs text-gray-700">
-                        <!-- Injection JS -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- 3. ÉCRAN FORMULAIRE DE SAISIE -->
     <div id="screen-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
@@ -193,7 +181,6 @@
         </div>
     </div>
 
-    <!-- LOGIQUE LOGICIELLE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -379,7 +366,7 @@
             function exportToCsv(list) {
                 if (list.length === 0) return;
                 const sortedList = sortChronologically(list);
-                let csvContent = "Date;Client;Tarif HT (EUR);Description;Source;Affaire Furious\r\n";
+                let csvContent = "Date;Client;Tarif (EUR);Description;Source;Affaire Furious\r\n";
                 sortedList.forEach(v => {
                     const date = (v.date || '').replace(/;/g, ',');
                     const client = (v.client || '').replace(/;/g, ',');
@@ -425,9 +412,9 @@
                         if (monthFound) monthlyData[monthFound] += valMontant;
                     });
 
-                    document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
-                    document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
-                    document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
+                    document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} €`;
+                    document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} €`;
+                    document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} €`;
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
 
@@ -464,11 +451,27 @@
                             maintainAspectRatio: false, 
                             plugins: { 
                                 legend: { display: false },
-                                tooltip: { enabled: true, backgroundColor: '#191919', padding: 10, borderRadius: 6 },
+                                tooltip: { 
+                                    enabled: true, 
+                                    backgroundColor: '#191919', 
+                                    padding: 10, 
+                                    borderRadius: 6,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
+                                        }
+                                    }
+                                },
                                 datalabels: { display: false } 
                             },
                             scales: {
-                                y: { grid: { color: 'rgba(0, 0, 0, 0.03)' }, ticks: { color: '#9CA3AF' } },
+                                y: { 
+                                    grid: { color: 'rgba(0, 0, 0, 0.03)' }, 
+                                    ticks: { 
+                                        color: '#9CA3AF',
+                                        callback: function(value) { return value.toLocaleString('fr-FR') + ' €'; }
+                                    } 
+                                },
                                 x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
                             }
                         }
@@ -506,7 +509,7 @@
                                     borderRadius: 8,
                                     callbacks: {
                                         label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} € HT`;
+                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
                                         }
                                     }
                                 },
