@@ -12,22 +12,33 @@
 
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6">
         <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md text-center">
-            <h2 class="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
+            <h2 class="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-6">
                 Reporting Morgan 2026
             </h2>
-            <p class="text-xs text-gray-400 mb-6">Brainsonic AI - Accès sécurisé</p>
             
+<<<<<<< HEAD
+            <form id="auth-form" class="space-y-4">
+                <div class="relative flex items-center">
+                    <input type="password" id="auth-password" placeholder="Mot de passe" required
+                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-10 select-none">👁️</button>
+=======
             <div class="space-y-4">
                 <div class="relative">
                     <input type="password" id="auth-password" placeholder="Mot de passe" 
                            class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
                     <button type="button" id="btn-toggle-pwd" class="absolute right-4 top-3.5 text-gray-500 hover:text-gray-300 text-sm cursor-pointer">👁️</button>
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
                 </div>
+<<<<<<< HEAD
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+=======
                 <button type="button" id="btn-login" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -159,7 +170,7 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // Système d'oeil mot de passe
+        // Gestion de l'œil (Affichage/Masquage mot de passe)
         const passwordInput = document.getElementById('auth-password');
         const togglePwdBtn = document.getElementById('btn-toggle-pwd');
         togglePwdBtn.addEventListener('click', () => {
@@ -172,10 +183,17 @@
             }
         });
 
+<<<<<<< HEAD
+        // Formulaire de Connexion (Clic et Entrée gérés via 'submit')
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (passwordInput.value.trim() === '1234') {
+=======
         // Connexion sécurisée
         document.getElementById('btn-login').addEventListener('click', (e) => {
             e.preventDefault();
             if (passwordInput.value.trim() === '1234') {
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
                 document.getElementById('auth-error').classList.add('hidden');
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
@@ -184,6 +202,9 @@
             }
         });
 
+<<<<<<< HEAD
+        // Aller au formulaire
+=======
         // Validation en pressant Entrée
         passwordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -192,6 +213,7 @@
         });
 
         // Création
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         document.getElementById('btn-go-to-form').addEventListener('click', () => {
             document.getElementById('form-id').value = '';
             document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -202,12 +224,17 @@
             showScreen('screen-form');
         });
 
+        // Retour au Dashboard
         document.getElementById('btn-back-to-dash').addEventListener('click', () => {
             showScreen('screen-dashboard');
             fetchAndRenderDashboard();
         });
 
+<<<<<<< HEAD
+        // Remplir le formulaire pour modification
+=======
         // Modification
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         function openEditMode(id) {
             const currentItem = globalVentes.find(v => v.id === id);
             if (!currentItem) return;
@@ -226,7 +253,11 @@
             showScreen('screen-form');
         }
 
+<<<<<<< HEAD
+        // Supprimer une ligne
+=======
         // Suppression
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         async function deleteItem(event, id) {
             event.stopPropagation();
             if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
@@ -341,7 +372,11 @@
             }
         }
 
+<<<<<<< HEAD
+        // --- ENREGISTREMENT / MODIFICATION ---
+=======
         // --- FORMULAIRE ACTION ---
+>>>>>>> fc269555217d8f43eb858a8507e790c9fd8cb6dd
         document.getElementById('insert-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetId = document.getElementById('form-id').value;
