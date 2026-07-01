@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Morgan 2026</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased min-h-screen">
 
+    <!-- 1. ÉCRAN DE CONNEXION -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6">
         <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md text-center">
             <h2 class="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-6">
@@ -30,7 +34,9 @@
         </div>
     </div>
 
+    <!-- 2. ÉCRAN PRINCIPAL (DASHBOARD) -->
     <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-10 hidden">
+        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
             <div>
                 <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
@@ -46,6 +52,7 @@
             </div>
         </div>
 
+        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
@@ -63,6 +70,7 @@
             </div>
         </div>
 
+        <!-- Section Graphiques & Top Clients -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
                 <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
@@ -75,11 +83,13 @@
                     <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
                 </div>
                 <div id="top-clients-list" class="space-y-4 my-auto">
-                    </div>
+                    <!-- Rempli en JS -->
+                </div>
                 <div></div>
             </div>
         </div>
 
+        <!-- Tableau des data - Ordre strict validé -->
         <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
             <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
                 <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
@@ -92,18 +102,20 @@
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Client</th>
                             <th class="px-6 py-4 text-right">Tarif</th>
-                            <th class="px-6 py-4">Affaire Furious</th>
                             <th class="px-6 py-4">Description</th>
                             <th class="px-6 py-4">Source</th>
+                            <th class="px-6 py-4">Affaire Furious</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
-                        </tbody>
+                        <!-- Rempli en JS -->
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- 3. ÉCRAN FORMULAIRE DE SAISIE -->
     <div id="screen-form" class="max-w-2xl mx-auto px-6 py-10 hidden">
         <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl">
             <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
@@ -127,10 +139,6 @@
                     <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
-                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
-                </div>
-                <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</label>
                     <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white"></textarea>
                 </div>
@@ -140,6 +148,10 @@
                         <option value="EBG">EBG</option>
                         <option value="Brainsonic">Brainsonic</option>
                     </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nom de l'affaire Furious</label>
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-20260410-BMW-GAIA" class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white">
                 </div>
 
                 <div class="flex gap-4 pt-2">
@@ -157,6 +169,7 @@
         </div>
     </div>
 
+    <!-- LOGIQUE INTÉGRALE SANS FILTRE D'EXCLUSION -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             
@@ -266,7 +279,7 @@
                 }
             });
 
-            // --- LECTURE ET TRAITEMENT ---
+            // --- LECTURE COMPLÈTE SANS FILTRES ---
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
@@ -281,7 +294,7 @@
 
                     globalVentes = ventes;
                     
-                    // Tri tolérant : si la date est textuelle (ex "Janvier"), on trie par ID décroissant pour garder l'ordre d'insertion
+                    // Tri décroissant pour afficher les dernières entrées en premier
                     const ventesInversees = [...ventes].sort((a, b) => b.id - a.id);
 
                     let totalCA = 0;
@@ -298,7 +311,6 @@
                         if (v.source === 'EBG') totalEBG += valMontant;
                         if (v.source === 'Brainsonic' || v.source === 'Direct') totalDirect += valMontant;
 
-                        // Extraction intelligente du mois textuel (ex "Janvier 2026" -> "Janvier")
                         let monthFound = 'Janvier';
                         for (let m of Object.keys(monthlyData)) {
                             if (String(v.date).includes(m)) {
@@ -340,6 +352,7 @@
                         `);
                     });
 
+                    // Ordre de rendu modifié : Date ➔ Client ➔ Tarif ➔ Description ➔ Source ➔ Affaire Furious
                     const tbody = document.getElementById('table-body');
                     tbody.innerHTML = '';
                     ventesInversees.forEach(v => {
@@ -348,9 +361,9 @@
                                 <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
                                 <td class="px-6 py-4 font-bold text-white">${v.client || ''}</td>
                                 <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
-                                <td class="px-6 py-4 text-gray-300 font-medium">${v.furious || ''}</td>
                                 <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
                                 <td class="px-6 py-4 font-semibold text-xs ${v.source === 'EBG' ? 'text-indigo-400' : 'text-cyan-400'}">${v.source || ''}</td>
+                                <td class="px-6 py-4 text-gray-300 font-mono text-xs">${v.furious || ''}</td>
                             </tr>
                         `);
                     });
@@ -384,7 +397,7 @@
                 }
             }
 
-            // --- TRANSMISSION SÉCURISÉE ---
+            // --- TRANSMISSION ---
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const targetId = document.getElementById('form-id').value;
