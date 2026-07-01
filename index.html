@@ -3,265 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporting Morgan 2026</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase SDK -->
+    <title>Mon Dashboard Privé</title>
+    <!-- Chargement de la bibliothèque officielle Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-radius; }
+        h1 { font-size: 20px; margin-bottom: 20px; color: #fff; }
+        input, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333; background: #252525; color: #fff; box-sizing: border-box; font-size: 14px; }
+        button { background: #3ecf8e; color: #fff; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #34b27b; }
+        .hidden { display: none; }
+        .status { font-size: 14px; margin-top: 10px; text-align: center; }
+        .success { color: #3ecf8e; }
+        .error { color: #f25c54; }
+    </style>
 </head>
-<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased selection:bg-cyan-500 selection:text-white">
+<body>
 
-    <div class="max-w-7xl mx-auto px-6 py-10">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-800 pb-6 gap-4">
-            <div>
-                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
-                    Reporting Morgan 2026
-                </h1>
-                <p class="text-sm text-gray-400 mt-1">Brainsonic AI</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="flex h-2 w-2 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                </span>
-                <span class="bg-gray-800/80 text-cyan-400 text-xs font-mono px-3 py-1.5 rounded-md border border-gray-700">LIVE SYNCED</span>
-            </div>
-        </div>
+    <!-- ÉCRAN 1 : LE MOT DE PASSE -->
+    <div id="login-screen" class="card">
+        <h1>Dashboard Privé - Connexion</h1>
+        <input type="password" id="password-input" placeholder="Entrez le mot de passe secret">
+        <button onclick="checkPassword()">Accéder au dashboard</button>
+        <div id="login-error" class="status error hidden">Mot de passe incorrect.</div>
+    </div>
 
-        <!-- KPIs Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA TOTAL</p>
-                <p id="kpi-total" class="text-3xl font-black text-white mt-2 font-mono">Chargement...</p>
-            </div>
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">APPORT EBG</p>
-                <p id="kpi-ebg" class="text-3xl font-black text-indigo-400 mt-2 font-mono">0 €</p>
-                <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
-            </div>
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 shadow-2xl">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
-                <p id="kpi-direct" class="text-3xl font-black text-cyan-400 mt-2 font-mono">0 €</p>
-                <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
-            </div>
-        </div>
-
-        <!-- Section Graphiques & Top Clients -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <!-- Évolution Mensuelle -->
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 lg:col-span-2">
-                <h3 class="text-base font-bold text-gray-200 mb-4 tracking-wide">Évolution Mensuelle du CA (€ HT)</h3>
-                <div class="h-64"><canvas id="monthlyChart"></canvas></div>
-            </div>
-            
-            <!-- Top Clients Séquence -->
-            <div class="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-gray-800/80 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-base font-bold text-gray-200 mb-1 tracking-wide">Top 3 Clients (CA Cumulé)</h3>
-                    <p class="text-xs text-gray-500 mb-4">Hors apporteur d'affaires EBG</p>
-                </div>
-                <div id="top-clients-list" class="space-y-4 my-auto">
-                    <!-- Rempli en JS -->
-                </div>
-                <div></div> <!-- Spacer pour compenser le retrait du graphique rond -->
-            </div>
-        </div>
-
-        <!-- Tableau des data -->
-        <div class="bg-[#111827]/60 backdrop-blur-md rounded-2xl border border-gray-800/80 overflow-hidden shadow-2xl">
-            <div class="px-6 py-5 border-b border-gray-800/80 flex justify-between items-center bg-gray-900/20">
-                <h3 class="text-base font-bold text-gray-200 tracking-wide">Détail affaires</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase font-bold tracking-wider bg-gray-900/40">
-                            <th class="px-6 py-4">Date</th>
-                            <th class="px-6 py-4">Client</th>
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4">Furious</th>
-                            <th class="px-6 py-4">Source</th>
-                            <th class="px-6 py-4 text-right">Montant</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-800/60 text-sm">
-                        <!-- Rempli en JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <!-- ÉCRAN 2 : LE DASHBOARD (MASQUÉ PAR DÉFAUT) -->
+    <div id="dashboard-screen" class="card hidden">
+        <h1>Ajouter du contenu (Markdown)</h1>
+        <textarea id="markdown-input" rows="10" placeholder="Collez votre texte en Markdown ici..."></textarea>
+        <button id="submit-btn" onclick="sendToSupabase()">Pousser dans Supabase</button>
+        <div id="status-message" class="status hidden"></div>
     </div>
 
     <script>
-        const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
-        const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
+        // CONFIGURATION : Remplace ces valeurs par tes propres clés du bloc-notes
+        const SUPABASE_URL = "https://pwfuuxttjlcpfaojtksl.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZnV1eHR0amxjcGZhb2p0a3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjA1MzksImV4cCI6MjA5ODM5NjUzOX0.CoWrh7f5vVSeGl37rgc2czWrOhnxWgHYYfpfdO9OEUo";
         
-        Chart.defaults.color = '#9CA3AF';
-        Chart.defaults.borderColor = 'rgba(156, 163, 175, 0.1)';
+        // SÉCURITÉ : Choisis ton mot de passe d'accès en dur pour le moment
+        const SECRET_PASSWORD = "Ytqywa613%%"; 
 
-        async function fetchAndRenderDashboard() {
-            if (!window.supabase || !window.supabase.createClient) {
-                document.getElementById('kpi-total').innerText = "Erreur SDK";
-                return;
-            }
+        // Initialisation du client Supabase
+        const supabase = sysSupabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-            try {
-                const { data: ventes, error } = await supabase
-                    .from('ventes')
-                    .select('*');
-
-                if (error) {
-                    document.getElementById('kpi-total').innerText = "Erreur Base";
-                    return;
-                }
-
-                if (!ventes || ventes.length === 0) {
-                    document.getElementById('kpi-total').innerText = "Aucune vente";
-                    return;
-                }
-
-                // Tri par ordre inverse chronologique (Du plus récent au plus ancien)
-                const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                let totalCA = 0;
-                let totalEBG = 0;
-                let totalDirect = 0;
-                
-                const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-                const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
-                const clientAggregation = {};
-
-                ventes.forEach(v => {
-                    const montant = parseFloat(v.montant);
-                    totalCA += montant;
-                    
-                    if (v.source === 'EBG') totalEBG += montant;
-                    if (v.source === 'Direct') totalDirect += montant;
-
-                    const dateObj = new Date(v.date);
-                    if (!isNaN(dateObj.getTime())) {
-                        const mName = months[dateObj.getMonth()];
-                        monthlyData[mName] += montant;
-                    }
-
-                    // Agrégation mathématique stricte
-                    let rawClient = v.client.toUpperCase().trim();
-                    let cleanClient = rawClient;
-                    
-                    if (rawClient.includes('SEB')) cleanClient = 'GROUPE SEB';
-                    else if (rawClient.includes('BMW')) cleanClient = 'BMW GROUPE';
-                    else if (rawClient.includes('EDITIS')) cleanClient = 'EDITIS';
-                    else if (rawClient.includes('BIOCODEX')) cleanClient = 'BIOCODEX';
-                    else if (rawClient.includes('AXA')) cleanClient = 'AXA FRANCE';
-                    else if (rawClient.includes('NUTRITION')) cleanClient = 'NUTRITION & SANTÉ';
-                    else if (rawClient.includes('JLM')) cleanClient = 'JLM GROUP';
-                    else if (rawClient.includes('SAGE')) cleanClient = 'SAGE FRANCE';
-                    else if (rawClient.includes('MOBIVIA')) cleanClient = 'MOBIVIA';
-                    else if (rawClient.includes('FORETS')) cleanClient = 'OFFICE NATIONAL DES FORÊTS';
-                    else if (rawClient.includes('INTER')) cleanClient = 'INTER ENTREPRISE';
-
-                    if (!cleanClient.includes('EBG')) {
-                        clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
-                    }
-                });
-
-                const topClients = Object.entries(clientAggregation)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3);
-
-                document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
-                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
-
-                const topListContainer = document.getElementById('top-clients-list');
-                topListContainer.innerHTML = '';
-                const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
-                
-                topClients.forEach((client, idx) => {
-                    const pctClient = ((client[1] / totalCA) * 100).toFixed(1);
-                    const card = `
-                        <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
-                                    <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-0.5">${pctClient}% du CA total</p>
-                            </div>
-                            <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
-                        </div>
-                    `;
-                    topListContainer.insertAdjacentHTML('beforeend', card);
-                });
-
-                // Génération du tableau avec la colonne Furious (déduite de la structure de données)
-                const tbody = document.getElementById('table-body');
-                tbody.innerHTML = '';
-                ventesInversees.forEach(v => {
-                    // Construction dynamique de la clé Furious si elle n'existe pas en colonne brute
-                    let formattedDate = new Date(v.date).toISOString().slice(0,10).replace(/-/g,'');
-                    let cleanClientSlug = v.client.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
-                    let cleanDescSlug = v.description.toLowerCase().trim().slice(0, 20).replace(/[^a-z0-9]/g, '-');
-                    let furiousFallback = `${v.source}-${formattedDate}-${cleanClientSlug}-${cleanDescSlug}`;
-                    let furiousCode = v.furious || v.num_affaire || furiousFallback;
-
-                    const row = `
-                        <tr class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40">
-                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
-                            <td class="px-6 py-4 font-bold text-white">${v.client}</td>
-                            <td class="px-6 py-4 text-gray-400 font-medium">${v.description}</td>
-                            <td class="px-6 py-4 text-gray-500 font-mono text-xs max-w-xs truncate" title="${furiousCode}">${furiousCode}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 text-xs font-bold rounded-md ${v.source === 'EBG' ? 'bg-indigo-950/60 text-indigo-400 border border-indigo-800/50' : 'bg-cyan-950/60 text-cyan-400 border border-cyan-800/50'}">
-                                    ${v.source}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.montant).toLocaleString('fr-FR')} €</td>
-                        </tr>
-                    `;
-                    tbody.insertAdjacentHTML('beforeend', row);
-                });
-
-                const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
-                new Chart(document.getElementById('monthlyChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: activeMonths,
-                        datasets: [{
-                            label: 'CA (€)',
-                            data: activeMonths.map(m => monthlyData[m]),
-                            backgroundColor: 'rgba(6, 182, 212, 0.85)',
-                            hoverBackgroundColor: '#06b6d4',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { grid: { color: 'rgba(156, 163, 175, 0.05)' } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
-
-            } catch (err) {
-                document.getElementById('kpi-total').innerText = "Erreur execution";
-                console.error(err);
+        // Fonction de vérification du mot de passe
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            if (input === SECRET_PASSWORD) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+            } else {
+                errorDiv.classList.remove('hidden');
             }
         }
 
-        window.addEventListener('load', () => {
-            setTimeout(fetchAndRenderDashboard, 150);
-        });
+        // Fonction d'envoi de la donnée brute
+        async function sendToSupabase() {
+            const markdownText = document.getElementById('markdown-input').value;
+            const statusDiv = document.getElementById('status-message');
+            const btn = document.getElementById('submit-btn');
+
+            if (!markdownText.trim()) {
+                showStatus("Le champ est vide.", "error");
+                return;
+            }
+
+            // Désactivation du bouton pendant l'envoi
+            btn.disabled = true;
+            btn.innerText = "Envoi en cours...";
+
+            // Insertion de la ligne dans la colonne 'contenu' de la table 'mes_notes'
+            const { data, error } = await supabase
+                .from('mes_notes')
+                .insert([{ contenu: markdownText }]);
+
+            // Réactivation du bouton
+            btn.disabled = false;
+            btn.innerText = "Pousser dans Supabase";
+
+            if (error) {
+                showStatus("Erreur : " + error.message, "error");
+            } else {
+                showStatus("Données envoyées avec succès !", "success");
+                document.getElementById('markdown-input').value = ""; // Vide la zone de texte
+            }
+        }
+
+        function showStatus(msg, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.innerText = msg;
+            statusDiv.className = "status " + type;
+            statusDiv.classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
