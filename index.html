@@ -16,13 +16,13 @@
                 Reporting Morgan 2026
             </h2>
             
-            <form id="auth-form" class="space-y-4">
+            <form id="auth-form" class="space-y-4" onsubmit="handleLogin(event)">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-30 select-none">👁️</button>
+                           class="w-full bg-gray-900/60 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest relative z-10">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-20 select-none border-none bg-transparent outline-none">👁️</button>
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer relative z-10">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
@@ -150,7 +150,7 @@
         let chartInstance = null;
         let globalVentes = [];
 
-        // --- NAVIGATION INTERNE ---
+        // --- ENCAPSULATION DE LA NAVIGATION ---
         function showScreen(screenId) {
             document.getElementById('screen-auth').classList.add('hidden');
             document.getElementById('screen-dashboard').classList.add('hidden');
@@ -158,10 +158,13 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // Gestion de l'œil
+        // Commutateur de l'œil d'authentification autonome
         const passwordInput = document.getElementById('auth-password');
         const togglePwdBtn = document.getElementById('btn-toggle-pwd');
-        togglePwdBtn.addEventListener('click', () => {
+        
+        togglePwdBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 togglePwdBtn.innerText = '🙈';
@@ -171,9 +174,9 @@
             }
         });
 
-        // Connexion unifiée (Clic & Entrée)
-        document.getElementById('auth-form').addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Intercepteur d'authentification unifié (Entrée et Clic)
+        function handleLogin(event) {
+            event.preventDefault();
             if (passwordInput.value.trim() === '1234') {
                 document.getElementById('auth-error').classList.add('hidden');
                 showScreen('screen-dashboard');
@@ -181,9 +184,9 @@
             } else {
                 document.getElementById('auth-error').classList.remove('hidden');
             }
-        });
+        }
 
-        // Formulaire création
+        // Redirections internes
         document.getElementById('btn-go-to-form').addEventListener('click', () => {
             document.getElementById('form-id').value = '';
             document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
@@ -194,13 +197,12 @@
             showScreen('screen-form');
         });
 
-        // Retour
         document.getElementById('btn-back-to-dash').addEventListener('click', () => {
             showScreen('screen-dashboard');
             fetchAndRenderDashboard();
         });
 
-        // Modification
+        // Activation modification
         function openEditMode(id) {
             const currentItem = globalVentes.find(v => v.id === id);
             if (!currentItem) return;
@@ -219,7 +221,7 @@
             showScreen('screen-form');
         }
 
-        // Suppression
+        // Exécution suppression
         async function deleteItem(event, id) {
             event.stopPropagation();
             if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
@@ -232,7 +234,7 @@
             }
         }
 
-        // --- GRAPH ET RENDU ---
+        // --- CALCULS ET TRAITEMENT DES FLUX DATA ---
         async function fetchAndRenderDashboard() {
             try {
                 const { data: ventes, error } = await supabase.from('mes_notes').select('*');
@@ -334,7 +336,7 @@
             }
         }
 
-        // --- ACTIONS FORMULAIRE ---
+        // --- ENREGISTREMENT ET MODIFICATION ---
         document.getElementById('insert-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetId = document.getElementById('form-id').value;
