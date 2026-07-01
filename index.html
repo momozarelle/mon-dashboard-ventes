@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased selection:bg-cyan-500 selection:text-white min-h-screen">
+<body class="bg-[#0B0F19] text-[#F3F4F6] font-sans antialiased min-h-screen">
 
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6">
         <div class="bg-[#111827]/60 backdrop-blur-md p-8 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md text-center">
@@ -19,10 +19,10 @@
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest z-10">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer z-30 select-none bg-transparent border-none outline-none">👁️</button>
+                           class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500 text-white font-mono tracking-widest">
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-4 text-gray-400 hover:text-white text-lg cursor-pointer bg-transparent border-none outline-none select-none z-30">👁️</button>
                 </div>
-                <button type="submit" id="btn-login-submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer z-10">
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/10 cursor-pointer">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-400 hidden mt-2">Mot de passe incorrect</p>
@@ -38,9 +38,12 @@
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">Brainsonic AI</p>
             </div>
-            <button id="btn-go-to-form" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-cyan-400/20 transition-all cursor-pointer">
-                Push Supabase
-            </button>
+            <div class="flex items-center gap-4">
+                <button id="btn-logout" class="text-xs text-gray-500 hover:text-red-400 transition-colors cursor-pointer">Déconnexion</button>
+                <button id="btn-go-to-form" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-cyan-400/20 transition-all cursor-pointer">
+                    Push Supabase
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -138,236 +141,303 @@
                     Enregistrer la ligne
                 </button>
             </form>
-            <p id="form-success" class="text-xs text-emerald-400 font-medium text-center mt-4 hidden">Opération effectuée avec succès !</p>
+            <div id="form-success-container" class="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center hidden">
+                <p id="form-success" class="text-xs text-emerald-400 font-bold">Ligne enregistrée ! Redirection vers le dashboard...</p>
+            </div>
         </div>
     </div>
 
     <script>
-        const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
-        const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        let chartInstance = null;
-        let globalVentes = [];
-
-        // --- GESTION DES ÉCRANS ---
-        function showScreen(screenId) {
-            document.getElementById('screen-auth').classList.add('hidden');
-            document.getElementById('screen-dashboard').classList.add('hidden');
-            document.getElementById('screen-form').classList.add('hidden');
-            document.getElementById(screenId).classList.remove('hidden');
-        }
-
-        // --- AUTHENTIFICATION CORRIGÉE ---
-        const passwordInput = document.getElementById('auth-password');
-        const togglePwdBtn = document.getElementById('btn-toggle-pwd');
-        const authForm = document.getElementById('auth-form');
-
-        // Gestionnaire du clic de l'œil propre
-        togglePwdBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                togglePwdBtn.innerText = '🙈';
-            } else {
-                passwordInput.type = 'password';
-                togglePwdBtn.innerText = '👁️';
-            }
-        });
-
-        // Gestionnaire de soumission propre (gère le clic ET la touche Entrée)
-        authForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const inputVal = passwordInput.value.trim();
+        // DOMContentLoaded garantit que les éléments HTML sont lus AVANT d'attacher JS
+        window.addEventListener('DOMContentLoaded', () => {
             
-            if (inputVal === '1234') {
-                document.getElementById('auth-error').classList.add('hidden');
+            const supabaseUrl = 'https://pwfuuxttjlcpfaojtksl.supabase.co';
+            const supabaseKey = 'sb_publishable_nIlnnrPgcoXhBM1IdkS50Q_rd7XglMd';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            let chartInstance = null;
+            let globalVentes = [];
+
+            const screenAuth = document.getElementById('screen-auth');
+            const screenDashboard = document.getElementById('screen-dashboard');
+            const screenForm = document.getElementById('screen-form');
+            const passwordInput = document.getElementById('auth-password');
+            const togglePwdBtn = document.getElementById('btn-toggle-pwd');
+            const authForm = document.getElementById('auth-form');
+            const authError = document.getElementById('auth-error');
+
+            function showScreen(screenId) {
+                screenAuth.classList.add('hidden');
+                screenDashboard.classList.add('hidden');
+                screenForm.classList.add('hidden');
+                document.getElementById(screenId).classList.remove('hidden');
+            }
+
+            // Gestion de l'état persistant de la session
+            if (localStorage.getItem('morgan_authenticated') === 'true') {
                 showScreen('screen-dashboard');
                 fetchAndRenderDashboard();
-            } else {
-                document.getElementById('auth-error').classList.remove('hidden');
             }
-        });
 
-        // --- NAVIGATION INTERNE ---
-        document.getElementById('btn-go-to-form').addEventListener('click', () => {
-            document.getElementById('form-id').value = '';
-            document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
-            document.getElementById('btn-submit-form').innerText = "Enregistrer la ligne";
-            document.getElementById('insert-form').reset();
-            document.getElementById('form-date').value = new Date().toISOString().substring(0, 10);
-            document.getElementById('form-success').classList.add('hidden');
-            showScreen('screen-form');
-        });
-
-        document.getElementById('btn-back-to-dash').addEventListener('click', () => {
-            showScreen('screen-dashboard');
-            fetchAndRenderDashboard();
-        });
-
-        // Modification
-        function openEditMode(id) {
-            const currentItem = globalVentes.find(v => v.id === id);
-            if (!currentItem) return;
-
-            document.getElementById('form-id').value = currentItem.id;
-            document.getElementById('form-title').innerText = "Modifier l'affaire";
-            document.getElementById('btn-submit-form').innerText = "Mettre à jour la ligne";
-            
-            document.getElementById('form-date').value = currentItem.date;
-            document.getElementById('form-client').value = currentItem.client;
-            document.getElementById('form-furious').value = currentItem.furious || currentItem.description || '';
-            document.getElementById('form-tarif').value = currentItem.tarif || currentItem.montant || 0;
-            document.getElementById('form-source').value = currentItem.source || 'EBG';
-
-            document.getElementById('form-success').classList.add('hidden');
-            showScreen('screen-form');
-        }
-
-        // Suppression
-        async function deleteItem(event, id) {
-            event.stopPropagation();
-            if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
-
-            const { error } = await supabase.from('mes_notes').delete().eq('id', id);
-            if (!error) {
-                fetchAndRenderDashboard();
-            } else {
-                alert("Erreur de suppression : " + error.message);
-            }
-        }
-
-        // --- DASHBOARD RENDU ---
-        async function fetchAndRenderDashboard() {
-            try {
-                const { data: ventes, error } = await supabase.from('mes_notes').select('*');
-
-                if (error || !ventes || ventes.length === 0) {
-                    document.getElementById('kpi-total').innerText = "0 € HT";
-                    document.getElementById('table-body').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune donnée trouvée</td></tr>';
-                    return;
+            // Infaillibilité du bouton de masquage / affichage du mdp
+            togglePwdBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    togglePwdBtn.innerText = '🙈';
+                } else {
+                    passwordInput.type = 'password';
+                    togglePwdBtn.innerText = '👁️';
                 }
+            });
 
-                globalVentes = ventes;
-                const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Soumission unifiée native de l'accès sécurisé
+            authForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                if (passwordInput.value.trim() === '1234') {
+                    authError.classList.add('hidden');
+                    localStorage.setItem('morgan_authenticated', 'true');
+                    showScreen('screen-dashboard');
+                    fetchAndRenderDashboard();
+                } else {
+                    authError.classList.remove('hidden');
+                }
+            });
 
-                let totalCA = 0;
-                let totalEBG = 0;
-                let totalDirect = 0;
-                const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-                const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
-                const clientAggregation = {};
+            document.getElementById('btn-logout').addEventListener('click', () => {
+                localStorage.removeItem('morgan_authenticated');
+                passwordInput.value = '';
+                showScreen('screen-auth');
+            });
 
-                ventes.forEach(v => {
-                    const montant = parseFloat(v.tarif || v.montant || 0);
-                    totalCA += montant;
-                    
-                    if (v.source === 'EBG') totalEBG += montant;
-                    if (v.source === 'Direct') totalDirect += montant;
+            // Routages de navigation interne
+            document.getElementById('btn-go-to-form').addEventListener('click', () => {
+                document.getElementById('form-id').value = '';
+                document.getElementById('form-title').innerText = "Nouvelle Entrée Supabase";
+                document.getElementById('btn-submit-form').innerText = "Enregistrer la ligne";
+                document.getElementById('insert-form').reset();
+                document.getElementById('form-date').value = new Date().toISOString().substring(0, 10);
+                document.getElementById('form-success-container').classList.add('hidden');
+                showScreen('screen-form');
+            });
 
-                    const dateObj = new Date(v.date);
-                    if (!isNaN(dateObj.getTime())) {
-                        monthlyData[months[dateObj.getMonth()]] += montant;
-                    }
+            document.getElementById('btn-back-to-dash').addEventListener('click', () => {
+                showScreen('screen-dashboard');
+                fetchAndRenderDashboard();
+            });
 
-                    let cleanClient = v.client.toUpperCase().trim();
-                    if (cleanClient.includes('SEB')) cleanClient = 'GROUPE SEB';
-                    else if (cleanClient.includes('BMW')) cleanClient = 'BMW GROUPE';
+            // Injection sécurisée dans l'environnement global pour les actions du tableau dynamique
+            window.openEditMode = function(id) {
+                const currentItem = globalVentes.find(v => v.id === id);
+                if (!currentItem) return;
 
-                    if (!cleanClient.includes('EBG')) {
-                        clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + montant;
-                    }
-                });
+                document.getElementById('form-id').value = currentItem.id;
+                document.getElementById('form-title').innerText = "Modifier l'affaire";
+                document.getElementById('btn-submit-form').innerText = "Mettre à jour la ligne";
+                
+                document.getElementById('form-date').value = currentItem.date;
+                document.getElementById('form-client').value = currentItem.client;
+                document.getElementById('form-furious').value = currentItem.furious;
+                document.getElementById('form-tarif').value = currentItem.tarif;
+                document.getElementById('form-source').value = currentItem.source;
 
-                const topClients = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
-
-                document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
-                document.getElementById('pct-ebg').innerText = `${((totalEBG/totalCA)*100).toFixed(1)}% du total`;
-                document.getElementById('pct-direct').innerText = `${((totalDirect/totalCA)*100).toFixed(1)}% du total`;
-
-                const topList = document.getElementById('top-clients-list');
-                topList.innerHTML = '';
-                const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
-                topClients.forEach((client, idx) => {
-                    topList.insertAdjacentHTML('beforeend', `
-                        <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
-                                <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
-                            </div>
-                            <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
-                        </div>
-                    `);
-                });
-
-                const tbody = document.getElementById('table-body');
-                tbody.innerHTML = '';
-                ventesInversees.forEach(v => {
-                    tbody.insertAdjacentHTML('beforeend', `
-                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
-                            <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
-                            <td class="px-6 py-4 font-bold text-white">${v.client}</td>
-                            <td class="px-6 py-4 text-gray-400 font-medium">${v.furious || v.description || ''}</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-white">${parseFloat(v.tarif || v.montant || 0).toLocaleString('fr-FR')} €</td>
-                            <td class="px-6 py-4 text-center">
-                                <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
-                            </td>
-                        </tr>
-                    `);
-                });
-
-                if (chartInstance) chartInstance.destroy();
-                const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
-                chartInstance = new Chart(document.getElementById('monthlyChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: activeMonths,
-                        datasets: [{
-                            label: 'CA (€)',
-                            data: activeMonths.map(m => monthlyData[m]),
-                            backgroundColor: 'rgba(6, 182, 212, 0.85)',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // --- PERSISTENCE ---
-        document.getElementById('insert-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const targetId = document.getElementById('form-id').value;
-
-            const payload = {
-                date: document.getElementById('form-date').value,
-                client: document.getElementById('form-client').value,
-                furious: document.getElementById('form-furious').value,
-                tarif: parseFloat(document.getElementById('form-tarif').value),
-                source: document.getElementById('form-source').value
+                document.getElementById('form-success-container').classList.add('hidden');
+                showScreen('screen-form');
             };
 
-            let resultError = null;
+            window.deleteItem = async function(event, id) {
+                event.stopPropagation();
+                if (!confirm("Voulez-vous vraiment supprimer définitivement cette affaire ?")) return;
 
-            if (targetId) {
-                const { error } = await supabase.from('mes_notes').update(payload).eq('id', targetId);
-                resultError = error;
-            } else {
-                const { error } = await supabase.from('mes_notes').insert([payload]);
-                resultError = error;
+                const { error } = await supabase.from('mes_notes').delete().eq('id', id);
+                if (!error) {
+                    fetchAndRenderDashboard();
+                } else {
+                    alert("Erreur de suppression : " + error.message);
+                }
+            };
+
+            // --- LECTURE ET PARSING DES COMPOSANTS DE STRUCTURE CLIENTS (`title`/`content`) ---
+            async function fetchAndRenderDashboard() {
+                try {
+                    const { data: rows, error } = await supabase.from('mes_notes').select('*');
+
+                    if (error || !rows || rows.length === 0) {
+                        document.getElementById('kpi-total').innerText = "0 € HT";
+                        document.getElementById('table-body').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune donnée trouvée</td></tr>';
+                        return;
+                    }
+
+                    // Mapping virtuel : On reconstruit nos objets métiers complexes depuis le modèle d'origine de ta table
+                    const ventes = [];
+                    rows.forEach(row => {
+                        try {
+                            // On tente de lire l'objet JSON stocké dans la colonne content
+                            const meta = JSON.parse(row.content);
+                            ventes.push({
+                                id: row.id,
+                                client: row.title || 'Inconnu',
+                                date: meta.date || new Date().toISOString().substring(0, 10),
+                                furious: meta.furious || '',
+                                tarif: parseFloat(meta.tarif || 0),
+                                source: meta.source || 'Direct'
+                            });
+                        } catch(e) {
+                            // Fallback rétrocompatible si le format dans content n'est pas du JSON (anciennes lignes de test)
+                            ventes.push({
+                                id: row.id,
+                                client: row.title || 'Inconnu',
+                                date: new Date().toISOString().substring(0, 10),
+                                furious: row.content || '',
+                                tarif: 0,
+                                source: 'Direct'
+                            });
+                        }
+                    });
+
+                    globalVentes = ventes;
+                    const ventesInversees = [...ventes].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    let totalCA = 0;
+                    let totalEBG = 0;
+                    let totalDirect = 0;
+                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                    const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
+                    const clientAggregation = {};
+
+                    ventes.forEach(v => {
+                        totalCA += v.tarif;
+                        
+                        if (v.source === 'EBG') totalEBG += v.tarif;
+                        if (v.source === 'Direct') totalDirect += v.tarif;
+
+                        const dateObj = new Date(v.date);
+                        if (!isNaN(dateObj.getTime())) {
+                            monthlyData[months[dateObj.getMonth()]] += v.tarif;
+                        }
+
+                        let cleanClient = v.client.toUpperCase().trim();
+                        if (cleanClient.includes('SEB')) cleanClient = 'GROUPE SEB';
+                        else if (cleanClient.includes('BMW')) cleanClient = 'BMW GROUPE';
+
+                        if (!cleanClient.includes('EBG')) {
+                            clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + v.tarif;
+                        }
+                    });
+
+                    const topClients = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+                    document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} € HT`;
+                    document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} € HT`;
+                    document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} € HT`;
+                    document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
+                    document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
+
+                    const topList = document.getElementById('top-clients-list');
+                    topList.innerHTML = '';
+                    const colors = ['from-cyan-500 to-blue-600', 'from-indigo-500 to-purple-600', 'from-emerald-500 to-teal-600'];
+                    topClients.forEach((client, idx) => {
+                        topList.insertAdjacentHTML('beforeend', `
+                            <div class="bg-gray-900/40 p-3.5 rounded-xl border border-gray-800 flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-gradient-to-r ${colors[idx]}"></span>
+                                    <p class="text-sm font-bold text-white tracking-wide">${client[0]}</p>
+                                </div>
+                                <p class="text-sm font-mono font-bold text-gray-200">${client[1].toLocaleString('fr-FR')} €</p>
+                            </div>
+                        `);
+                    });
+
+                    const tbody = document.getElementById('table-body');
+                    tbody.innerHTML = '';
+                    ventesInversees.forEach(v => {
+                        tbody.insertAdjacentHTML('beforeend', `
+                            <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-900/20 transition-colors border-b border-gray-800/40 cursor-pointer">
+                                <td class="px-6 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">${new Date(v.date).toLocaleDateString('fr-FR')}</td>
+                                <td class="px-6 py-4 font-bold text-white">${v.client}</td>
+                                <td class="px-6 py-4 text-gray-400 font-medium">${v.furious}</td>
+                                <td class="px-6 py-4 text-right font-mono font-bold text-white">${v.tarif.toLocaleString('fr-FR')} €</td>
+                                <td class="px-6 py-4 text-center">
+                                    <button onclick="deleteItem(event, ${v.id})" class="text-gray-500 hover:text-red-400 p-1 transition-colors cursor-pointer">🗑️</button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    if (chartInstance) chartInstance.destroy();
+                    const activeMonths = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet'];
+                    chartInstance = new Chart(document.getElementById('monthlyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: activeMonths,
+                            datasets: [{
+                                label: 'CA (€)',
+                                data: activeMonths.map(m => monthlyData[m]),
+                                backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                                borderRadius: 6
+                            }]
+                        },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { grid: { color: 'rgba(156, 163, 175, 0.05)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+
+                } catch (err) {
+                    console.error(err);
+                }
             }
 
-            if (!resultError) {
-                document.getElementById('form-success').classList.remove('hidden');
-                if (!targetId) document.getElementById('insert-form').reset();
-            } else {
-                alert("Erreur d'enregistrement : " + resultError.message);
-            }
+            // --- ÉCRITURE ET SÉRIALISATION COMPATIBLE AVEC TA COMPOSITION DE TABLE (`title`/`content`) ---
+            document.getElementById('insert-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const targetId = document.getElementById('form-id').value;
+
+                const clientValue = document.getElementById('form-client').value;
+                
+                // Emballage des métadonnées étendues dans une chaîne JSON pour la colonne content
+                const metadataObj = {
+                    date: document.getElementById('form-date').value,
+                    furious: document.getElementById('form-furious').value,
+                    tarif: parseFloat(document.getElementById('form-tarif').value),
+                    source: document.getElementById('form-source').value
+                };
+                const contentValue = JSON.stringify(metadataObj);
+
+                // Payload aligné à 100% avec les colonnes de ta photo Supabase
+                const payload = {
+                    title: clientValue,
+                    content: contentValue
+                };
+
+                let resultError = null;
+
+                if (targetId) {
+                    const { error } = await supabase.from('mes_notes').update(payload).eq('id', targetId);
+                    resultError = error;
+                } else {
+                    const { error } = await supabase.from('mes_notes').insert([payload]);
+                    resultError = error;
+                }
+
+                if (!resultError) {
+                    document.getElementById('form-success-container').classList.remove('hidden');
+                    if (!targetId) document.getElementById('insert-form').reset();
+                    
+                    // UX Senior : Message de succès clair puis redirection automatique temporisée vers le tableau rechargé
+                    setTimeout(() => {
+                        showScreen('screen-dashboard');
+                        fetchAndRenderDashboard();
+                    }, 1200);
+                } else {
+                    alert("Erreur d'enregistrement Supabase : " + resultError.message);
+                }
+            });
         });
     </script>
 </body>
