@@ -53,12 +53,12 @@
             </div>
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">APPORT EBG</p>
-                <p id="kpi-ebg" class="text-3xl font-semibold text-indigo-600 mt-2 font-mono">0 €</p>
+                <p id="kpi-ebg" class="text-3xl font-semibold text-orange-600 mt-2 font-mono">0 €</p>
                 <p id="pct-ebg" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
             <div class="bg-white p-6 rounded-2xl border border-gray-200/60 shadow-xs">
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">DIRECT BRAINSONIC</p>
-                <p id="kpi-direct" class="text-3xl font-semibold text-teal-600 mt-2 font-mono">0 €</p>
+                <p id="kpi-direct" class="text-3xl font-semibold text-purple-600 mt-2 font-mono">0 €</p>
                 <p id="pct-direct" class="text-xs text-gray-400 font-medium mt-1">0% du total</p>
             </div>
         </div>
@@ -127,7 +127,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Nom du Client</label>
-                    <input type="text" id="form-client" placeholder="Ex: BMW GROUPE" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
+                    <input type="text" id="form-client" placeholder="Ex: BMW" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 focus:bg-white text-gray-900 transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Tarif (€ HT)</label>
@@ -303,24 +303,34 @@
                 }
             });
 
+            // CORRECTION DES COLONNES + TRI CHRONOLOGIQUE STRICT (Du plus récent au plus ancien)
             function renderTableRows(list) {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
-                const sortedList = [...list].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Algorithme de tri : On trie par ID décroissant pour garantir que la dernière affaire insérée remonte tout en haut
+                const sortedList = [...list].sort((a, b) => b.id - a.id);
                 
                 if (sortedList.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
                     return;
                 }
+                
                 sortedList.forEach(v => {
+                    // Application des couleurs demandées : EBG en orange (#EA580C) et Brainsonic en violet (#7C3AED)
+                    const isEBG = String(v.source).trim().toUpperCase() === 'EBG';
+                    const badgeColorClass = isEBG ? 'text-orange-600 bg-orange-50' : 'text-purple-600 bg-purple-50';
+
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/80 transition-colors border-b border-gray-100 cursor-pointer">
                             <td class="px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">${v.date || '-'}</td>
                             <td class="px-6 py-4 font-semibold text-gray-900">${v.client || ''}</td>
                             <td class="px-6 py-4 text-right font-mono font-bold text-gray-900">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
-                            <td class="px-6 py-4 text-gray-500 font-normal">${v.furious || ''}</td>
-                            <td class="px-6 py-4 text-gray-400 max-w-xs truncate">${v.description || ''}</td>
-                            <td class="px-6 py-4 text-xs font-semibold ${v.source === 'EBG' ? 'text-indigo-600' : 'text-teal-600'}">${v.source || ''}</td>
+                            <td class="px-6 py-4 text-gray-600 max-w-xs truncate">${v.description || ''}</td>
+                            <td class="px-6 py-4 text-xs font-semibold">
+                                <span class="px-2.5 py-1 rounded-full ${badgeColorClass}">${v.source || ''}</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-500 font-mono text-xs">${v.furious || ''}</td>
                         </tr>
                     `);
                 });
@@ -344,7 +354,6 @@
                     let totalEBG = 0;
                     let totalDirect = 0;
                     
-                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
 
@@ -352,8 +361,8 @@
                         const valMontant = parseFloat(v.montant || 0);
                         totalCA += valMontant;
                         
-                        if (v.source === 'EBG') totalEBG += valMontant;
-                        if (v.source === 'Brainsonic' || v.source === 'Direct') totalDirect += valMontant;
+                        if (String(v.source).trim().toUpperCase() === 'EBG') totalEBG += valMontant;
+                        if (String(v.source).trim().toUpperCase() === 'BRAINSONIC' || String(v.source).trim().toUpperCase() === 'DIRECT') totalDirect += valMontant;
 
                         let monthFound = 'Janvier';
                         for (let m of Object.keys(monthlyData)) {
@@ -364,12 +373,11 @@
                         }
                         monthlyData[monthFound] += valMontant;
 
-                        let cleanClient = (v.client || 'INCONNU').toUpperCase().trim();
-                        if (cleanClient.includes('SEB')) cleanClient = 'GROUPE SEB';
-                        else if (cleanClient.includes('BMW')) cleanClient = 'BMW GROUPE';
-
-                        if (!cleanClient.includes('EBG')) {
-                            clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + valMontant;
+                        if (v.client) {
+                            let cleanClient = v.client.trim();
+                            if (cleanClient && !cleanClient.toUpperCase().includes('EBG')) {
+                                clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + valMontant;
+                            }
                         }
                     });
 
@@ -383,7 +391,7 @@
 
                     const topList = document.getElementById('top-clients-list');
                     topList.innerHTML = '';
-                    const colors = ['bg-gradient-to-r from-blue-500 to-indigo-600 text-white', 'bg-gray-100 text-gray-800', 'bg-gray-50 text-gray-700'];
+                    const colors = ['bg-gradient-to-r from-gray-900 to-gray-800 text-white', 'bg-gray-100 text-gray-800', 'bg-gray-50 text-gray-600'];
                     
                     topClients.forEach((client, idx) => {
                         topList.insertAdjacentHTML('beforeend', `
