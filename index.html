@@ -65,10 +65,12 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-            <button onclick="requestAccess('reporting')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
+            <!-- Bouton vers Reporting (Texte grisé par défaut, noir au survol) -->
+            <button onclick="requestAccess('reporting')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-400 hover:text-black hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Reporting
             </button>
-            <button onclick="requestAccess('kanban')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
+            <!-- Bouton vers Gestion des tâches (Texte grisé par défaut, noir au survol) -->
+            <button onclick="requestAccess('kanban')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-400 hover:text-black hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Gestion des tâches
             </button>
         </div>
@@ -79,7 +81,7 @@
     <!-- ========================================== -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/30 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 w-full max-w-sm text-center">
-            <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Securisé</h2>
+            <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Sécurisé</h2>
             <p class="text-xs text-gray-400 mb-6">Veuillez saisir le mot de passe de cette application.</p>
             
             <form id="auth-form" class="space-y-4">
@@ -244,12 +246,12 @@
                 <!-- Injecté dynamiquement par JS -->
             </div>
             
-            <button onclick="createInitialInlineColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
+            <button onclick="window.createInitialInlineColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
                 +
             </button>
         </div>
 
-        <!-- Zone Poubelle Fixe Partagée (Cartes et Colonnes) -->
+        <!-- Zone Poubelle Fixe Partagée -->
         <div id="kanban-column-trash-zone" 
              ondragover="handleColumnTrashOver(event)" 
              ondragleave="handleColumnTrashLeave(event)" 
@@ -262,7 +264,7 @@
         </div>
     </div>
 
-    <!-- MODALE KANBAN ENRICHIE POUR ÉDITION DE CARTE -->
+    <!-- MODALE KANBAN ENRICHIE -->
     <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/10 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Détails de la carte</h3>
@@ -387,7 +389,7 @@
                 }
             });
 
-            // --- MODULE REPORTING EXÉCUTIF ---
+            // --- REPORTING ACTIONS ---
             window.openReportingForm = function() {
                 document.getElementById('form-id').value = '';
                 document.getElementById('reporting-form-title').innerText = "Nouvelle Entrée";
@@ -595,21 +597,20 @@
                         `;
                     });
 
+                    // Ajout d'effet de survol (hover) sur la colonne entière, texte d'en-tête reste en noir
                     container.insertAdjacentHTML('beforeend', `
-                        <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh]" 
+                        <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh] hover:border-gray-300 hover:bg-gray-50/20 transition-all duration-200" 
                              data-col-id="${col.id}" draggable="true" ondragstart="window.handleColumnDragStart(event)" ondragend="window.handleColumnDragEnd(event)"
                              ondragover="window.handleColDragOver(event)" ondragleave="window.handleColDragLeave(event)" ondrop="window.handleColDrop(event)">
                             <div class="flex justify-between items-center mb-4 select-none cursor-move">
                                 ${isFixed ? `<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>` : 
-                                `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text">`}
+                                `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text font-medium">`}
                             </div>
                             
-                            <!-- Liste des cartes -->
                             <div class="space-y-3 overflow-y-auto flex-1 pb-2 min-h-[50px] transition-colors" data-cards-zone="true">
                                 ${cardsHtml}
                             </div>
                             
-                            <!-- Zone d'input inline dynamique pour ajouter une carte (DA épurée sans prompt) -->
                             <div id="inline-card-input-container-${col.id}" class="hidden mb-2">
                                 <input type="text" id="inline-card-input-${col.id}" placeholder="Nom de la carte..." 
                                        onkeydown="window.handleInlineCardKeyDown(event, ${col.id})"
@@ -623,7 +624,6 @@
                 });
             }
 
-            // --- LOGIQUE INLINE INTELLIGENTE (STYLE CLAUDE SANS POPUP) ---
             window.showInlineCardInput = function(colId) {
                 document.getElementById(`inline-card-btn-${colId}`).classList.add('hidden');
                 const container = document.getElementById(`inline-card-input-container-${colId}`);
@@ -646,9 +646,7 @@
                 const input = document.getElementById(`inline-card-input-${colId}`);
                 if (!input) return;
                 const text = input.value.trim();
-                
                 window.hideInlineCardInput(colId);
-
                 if (!text) return;
 
                 const colCards = localCartes.filter(c => c.colonne_id === colId);
@@ -665,13 +663,11 @@
                 if (btn) btn.classList.remove('hidden');
             };
 
-            // Création de colonne instantanée inline
             window.createInitialInlineColumn = async function() {
                 const nextPos = localColonnes.length;
                 const { data, error } = await supabase.from('kanban_colonnes').insert([{ titre: 'Nouvelle Colonne', position: nextPos }]).select();
                 if (!error && data && data[0]) {
                     await fetchAndRenderKanban();
-                    // On focus directement le champ texte de la colonne créée pour la renommer
                     const inputs = document.querySelectorAll('[data-col-id] input');
                     if (inputs.length > 0) {
                         const lastInput = inputs[inputs.length - 1];
@@ -681,7 +677,7 @@
                 }
             };
 
-            // Double clic global délégué robuste
+            // Double clic global délégué pour l'ouverture de la carte
             document.addEventListener('dblclick', (e) => {
                 const cardEl = e.target.closest('.kanban-card');
                 if (cardEl) {
@@ -692,7 +688,7 @@
                 }
             });
 
-            // DRAG & DROP HANDLING EXPOSÉ
+            // DRAG ACTIONS EXPOSÉES
             window.handleColumnDragStart = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
                 draggedColumnId = colEl.getAttribute('data-col-id');
