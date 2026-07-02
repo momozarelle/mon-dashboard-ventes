@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HUB Morgan 2026</title>
     
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     <link class="apple-touch-icon" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -40,8 +45,12 @@
 </head>
 <body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100 transition-colors duration-200">
 
+    <!-- Overlay de gradation rouge lors du drag vers la corbeille basse -->
     <div id="trash-overlay" class="fixed inset-0 z-40"></div>
 
+    <!-- ========================================== -->
+    <!-- 1. ÉCRAN ACCUEIL : LE HUB PUBLIC           -->
+    <!-- ========================================== -->
     <div id="screen-hub" class="flex flex-col items-center justify-center min-h-screen px-6 bg-white">
         <div class="text-center mb-14 select-none">
             <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
@@ -65,9 +74,12 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 2. ÉCRAN SÉCURISÉ : CONNEXION ÉTANCHÉE     -->
+    <!-- ========================================== -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/30 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 w-full max-w-sm text-center">
-            <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Sécurisé</h2>
+            <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Securisé</h2>
             <p class="text-xs text-gray-400 mb-6">Veuillez saisir le mot de passe de cette application.</p>
             
             <form id="auth-form" class="space-y-4">
@@ -93,6 +105,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 3. MODULE APPLICATION : REPORTING          -->
+    <!-- ========================================== -->
     <div id="screen-reporting" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -162,6 +177,7 @@
         </div>
     </div>
 
+    <!-- FORMULAIRE REPORTING -->
     <div id="screen-reporting-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
@@ -205,6 +221,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 4. MODULE APPLICATION : KANBAN WORKSPACE   -->
+    <!-- ========================================== -->
     <div id="screen-kanban" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -219,15 +238,18 @@
             </div>
         </div>
 
+        <!-- Kanban Board Area -->
         <div class="flex gap-6 overflow-x-auto pb-16 items-start relative min-h-[60vh]">
             <div id="kanban-board-container" class="flex gap-6 items-start">
-                </div>
+                <!-- Injecté dynamiquement par JS -->
+            </div>
             
-            <button onclick="createKanbanColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
+            <button onclick="createInitialInlineColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
                 +
             </button>
         </div>
 
+        <!-- Zone Poubelle Fixe Partagée (Cartes et Colonnes) -->
         <div id="kanban-column-trash-zone" 
              ondragover="handleColumnTrashOver(event)" 
              ondragleave="handleColumnTrashLeave(event)" 
@@ -240,6 +262,7 @@
         </div>
     </div>
 
+    <!-- MODALE KANBAN ENRICHIE POUR ÉDITION DE CARTE -->
     <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/10 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Détails de la carte</h3>
@@ -262,6 +285,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT APPLICATIF LOGICIEL UNIQUE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -363,7 +387,7 @@
                 }
             });
 
-            // --- REPORTING ACTIONS ---
+            // --- MODULE REPORTING EXÉCUTIF ---
             window.openReportingForm = function() {
                 document.getElementById('form-id').value = '';
                 document.getElementById('reporting-form-title').innerText = "Nouvelle Entrée";
@@ -452,22 +476,6 @@
                 link.click();
             });
 
-            function sortChronologically(list) {
-                return [...list].sort((a, b) => {
-                    const dateA = String(a.date || ''); const dateB = String(b.date || '');
-                    let idxA = -1; let idxB = -1;
-                    monthsOrder.forEach((m, idx) => {
-                        if (dateA.toLowerCase().includes(m.toLowerCase())) idxA = idx;
-                        if (dateB.toLowerCase().includes(m.toLowerCase())) idxB = idx;
-                    });
-                    const yA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
-                    const yB = parseInt(dateB.match(/\d{4}/)?.[0] || '2026');
-                    if (yA !== yB) return yB - yA;
-                    if (idxA !== idxB) return idxB - idxA;
-                    return b.id - a.id;
-                });
-            }
-
             function renderTableRows(list) {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
@@ -544,7 +552,7 @@
                 } catch(err) { console.error(err); }
             }
 
-            // --- MODULE WORKSPACE KANBAN ENGINE ---
+            // --- MODULE WORKSPACE KANBAN ENGINE INLINE ---
             let localColonnes = [];
             let localCartes = [];
             let draggedCardId = null;
@@ -595,16 +603,85 @@
                                 ${isFixed ? `<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>` : 
                                 `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text">`}
                             </div>
-                            <div class="space-y-3 overflow-y-auto flex-1 pb-4 min-h-[50px] transition-colors" data-cards-zone="true">
+                            
+                            <!-- Liste des cartes -->
+                            <div class="space-y-3 overflow-y-auto flex-1 pb-2 min-h-[50px] transition-colors" data-cards-zone="true">
                                 ${cardsHtml}
                             </div>
-                            <button onclick="window.addKanbanCard(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
+                            
+                            <!-- Zone d'input inline dynamique pour ajouter une carte (DA épurée sans prompt) -->
+                            <div id="inline-card-input-container-${col.id}" class="hidden mb-2">
+                                <input type="text" id="inline-card-input-${col.id}" placeholder="Nom de la carte..." 
+                                       onkeydown="window.handleInlineCardKeyDown(event, ${col.id})"
+                                       onblur="window.saveInlineCard(${col.id})"
+                                       class="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
+                            </div>
+
+                            <button id="inline-card-btn-${col.id}" onclick="window.showInlineCardInput(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
                         </div>
                     `);
                 });
             }
 
-            // --- DELEGATED EVENT LISTENER GLOBAL POUR LE DOUBLE CLIC DE CARTE ---
+            // --- LOGIQUE INLINE INTELLIGENTE (STYLE CLAUDE SANS POPUP) ---
+            window.showInlineCardInput = function(colId) {
+                document.getElementById(`inline-card-btn-${colId}`).classList.add('hidden');
+                const container = document.getElementById(`inline-card-input-container-${colId}`);
+                const input = document.getElementById(`inline-card-input-${colId}`);
+                container.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+            };
+
+            window.handleInlineCardKeyDown = function(e, colId) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.saveInlineCard(colId);
+                } else if (e.key === 'Escape') {
+                    window.hideInlineCardInput(colId);
+                }
+            };
+
+            window.saveInlineCard = async function(colId) {
+                const input = document.getElementById(`inline-card-input-${colId}`);
+                if (!input) return;
+                const text = input.value.trim();
+                
+                window.hideInlineCardInput(colId);
+
+                if (!text) return;
+
+                const colCards = localCartes.filter(c => c.colonne_id === colId);
+                const nextPos = colCards.length;
+
+                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text, position: nextPos, notes: '' }]);
+                fetchAndRenderKanban();
+            };
+
+            window.hideInlineCardInput = function(colId) {
+                const container = document.getElementById(`inline-card-input-container-${colId}`);
+                const btn = document.getElementById(`inline-card-btn-${colId}`);
+                if (container) container.classList.add('hidden');
+                if (btn) btn.classList.remove('hidden');
+            };
+
+            // Création de colonne instantanée inline
+            window.createInitialInlineColumn = async function() {
+                const nextPos = localColonnes.length;
+                const { data, error } = await supabase.from('kanban_colonnes').insert([{ titre: 'Nouvelle Colonne', position: nextPos }]).select();
+                if (!error && data && data[0]) {
+                    await fetchAndRenderKanban();
+                    // On focus directement le champ texte de la colonne créée pour la renommer
+                    const inputs = document.querySelectorAll('[data-col-id] input');
+                    if (inputs.length > 0) {
+                        const lastInput = inputs[inputs.length - 1];
+                        lastInput.focus();
+                        lastInput.select();
+                    }
+                }
+            };
+
+            // Double clic global délégué robuste
             document.addEventListener('dblclick', (e) => {
                 const cardEl = e.target.closest('.kanban-card');
                 if (cardEl) {
@@ -615,7 +692,7 @@
                 }
             });
 
-            // DRAG ACTIONS EXPOSÉES
+            // DRAG & DROP HANDLING EXPOSÉ
             window.handleColumnDragStart = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
                 draggedColumnId = colEl.getAttribute('data-col-id');
@@ -639,7 +716,6 @@
                 draggedCardId = cardEl.getAttribute('data-card-id');
                 cardEl.classList.add('kanban-ghost');
                 
-                // On affiche la corbeille pour la carte également
                 const trashZone = document.getElementById('kanban-column-trash-zone');
                 trashZone.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 trashZone.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
@@ -677,7 +753,6 @@
                 e.preventDefault();
                 document.body.classList.remove('trash-active');
 
-                // Si on drop une CARTE dans la poubelle basse
                 if (draggedCardId) {
                     if (confirm("Voulez-vous supprimer cette carte ?")) {
                         await supabase.from('kanban_cartes').delete().eq('id', draggedCardId);
@@ -687,7 +762,6 @@
                     return;
                 }
 
-                // Si on drop une COLONNE dans la poubelle basse
                 if (draggedColumnId && draggedColumnId != 1) {
                     if (confirm("Voulez-vous détruire la colonne et toutes ses cartes ?")) {
                         await supabase.from('kanban_colonnes').delete().eq('id', draggedColumnId);
@@ -736,23 +810,9 @@
                 }
             };
 
-            window.createKanbanColumn = async function() {
-                const titre = prompt("Nom de la nouvelle colonne :");
-                if (!titre || !titre.trim()) return;
-                await supabase.from('kanban_colonnes').insert([{ titre: titre.trim(), position: localColonnes.length }]);
-                fetchAndRenderKanban();
-            };
-
             window.renameKanbanColumn = async function(id, val) {
                 if (!val || !val.trim()) return;
                 await supabase.from('kanban_colonnes').update({ titre: val.trim() }).eq('id', id);
-                fetchAndRenderKanban();
-            };
-
-            window.addKanbanCard = async function(colId) {
-                const text = prompt("Titre de la carte :");
-                if (!text || !text.trim()) return;
-                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text.trim(), position: localCartes.filter(c => c.colonne_id === colId).length, notes: '' }]);
                 fetchAndRenderKanban();
             };
 
@@ -762,7 +822,7 @@
                 fetchAndRenderKanban();
             };
 
-            // MODALE DÉTAILS
+            // MODALE DÉTAILS CARTE
             const cardModal = document.getElementById('kanban-card-modal');
             const modalCardTitleInput = document.getElementById('modal-card-title-input');
             const modalNotesTextarea = document.getElementById('modal-card-notes-textarea');
