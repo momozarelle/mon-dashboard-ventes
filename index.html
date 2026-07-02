@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HUB Morgan 2026</title>
     
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     <link class="apple-touch-icon" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -40,8 +45,12 @@
 </head>
 <body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100 transition-colors duration-200">
 
+    <!-- Overlay de gradation rouge lors du drag vers la corbeille basse -->
     <div id="trash-overlay" class="fixed inset-0 z-40"></div>
 
+    <!-- ========================================== -->
+    <!-- 1. ÉCRAN ACCUEIL : LE HUB PUBLIC           -->
+    <!-- ========================================== -->
     <div id="screen-hub" class="flex flex-col items-center justify-center min-h-screen px-6 bg-white">
         <div class="text-center mb-14 select-none">
             <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
@@ -65,6 +74,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 2. ÉCRAN SÉCURISÉ : CONNEXION ÉTANCHÉE     -->
+    <!-- ========================================== -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/30 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 w-full max-w-sm text-center">
             <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Sécurisé</h2>
@@ -93,6 +105,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 3. MODULE APPLICATION : REPORTING          -->
+    <!-- ========================================== -->
     <div id="screen-reporting" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -162,6 +177,7 @@
         </div>
     </div>
 
+    <!-- FORMULAIRE REPORTING -->
     <div id="screen-reporting-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
@@ -205,6 +221,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 4. MODULE APPLICATION : KANBAN WORKSPACE   -->
+    <!-- ========================================== -->
     <div id="screen-kanban" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -219,15 +238,18 @@
             </div>
         </div>
 
+        <!-- Kanban Board Area Wrapper (Contient les colonnes ET le bouton + d'ajout inline) -->
         <div class="flex gap-6 overflow-x-auto pb-16 items-start relative min-h-[60vh]">
             <div id="kanban-board-container" class="flex gap-6 items-start">
-                </div>
+                <!-- Les colonnes de tâches réapparaissent dynamiquement ici -->
+            </div>
             
             <button onclick="window.createInitialInlineColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
                 +
             </button>
         </div>
 
+        <!-- Zone Poubelle Fixe Partagée -->
         <div id="kanban-column-trash-zone" 
              ondragover="handleColumnTrashOver(event)" 
              ondragleave="handleColumnTrashLeave(event)" 
@@ -240,6 +262,7 @@
         </div>
     </div>
 
+    <!-- MODALE KANBAN ENRICHIE -->
     <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/10 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Détails de la carte</h3>
@@ -262,6 +285,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT APPLICATIF LOGICIEL UNIQUE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -274,7 +298,7 @@
             let podiumChartInstance = null;
             let globalVentes = [];
             let currentAuthContext = null;
-            let isInlineSavingMap = {}; // Empêche la double sauvegarde simultanée (Enter + Blur)
+            let isInlineSavingMap = {};
 
             const monthsOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
@@ -540,6 +564,7 @@
                         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } }, datalabels: { display: false } }, scales: { y: { ticks: { callback: (v) => v.toLocaleString('fr-FR') + ' €' } } } }
                     });
 
+                    // CORRECTION DU FORMAT DES CHIFFRES DU PODIUM AVEC ESPACES DE SÉPARATION (DATALABELS PLUGIN FORMATTER FORCÉ)
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
                         type: 'bar',
@@ -555,7 +580,7 @@
                                     anchor: 'end', 
                                     color: '#111827', 
                                     font: { weight: 'bold' }, 
-                                    formatter: (v) => v > 0 ? `${v.toLocaleString('fr-FR')} €` : '' 
+                                    formatter: (v) => v > 0 ? `${parseFloat(v).toLocaleString('fr-FR')} €` : '' 
                                 } 
                             }, 
                             scales: { 
@@ -566,7 +591,72 @@
                 } catch(err) { console.error(err); }
             }
 
-            // --- MODULE WORKSPACE KANBAN ENGINE INLINE ---
+            // --- MODULE WORKSPACE KANBAN ---
+            let localColonnes = [];
+            let localCartes = [];
+            let draggedCardId = null;
+            let draggedColumnId = null;
+
+            async function fetchAndRenderKanban() {
+                try {
+                    const { data: cols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
+                    if (!cols || cols.length === 0) {
+                        await supabase.from('kanban_colonnes').insert([{ id: 1, titre: 'Mes Notes', position: 0 }]);
+                    }
+                    const { data: realCols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
+                    const { data: realCards } = await supabase.from('kanban_cartes').select('*').order('position', { ascending: true });
+
+                    localColonnes = realCols || [];
+                    localCartes = realCards || [];
+                    renderKanbanDOM();
+                } catch(err) { console.error(err); }
+            }
+
+            function renderKanbanDOM() {
+                const container = document.getElementById('kanban-board-container');
+                container.innerHTML = '';
+
+                localColonnes.forEach(col => {
+                    const isFixed = col.id === 1;
+                    let cardsHtml = '';
+
+                    localCartes.filter(c => c.colonne_id === col.id).forEach(card => {
+                        cardsHtml += `
+                            <div class="kanban-card bg-white border border-gray-100 p-3 rounded-lg cursor-grab active:cursor-grabbing text-xs text-gray-800 font-normal hover:border-gray-300 transition-all select-none flex justify-between items-start gap-2 relative group" 
+                                 draggable="true" data-card-id="${card.id}" ondragstart="window.handleCardDragStart(event)" ondragend="window.handleCardDragEnd(event)">
+                                <span class="flex-1 truncate pr-4 pointer-events-none">${card.contenu}</span>
+                                <button onclick="event.stopPropagation(); window.deleteKanbanCardDirect(${card.id})" class="delete-btn text-gray-300 hover:text-black transition-colors duration-150 absolute right-2.5 top-3 cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6.14m-4.02 0L10 9m4.665-3.012A5.986 5.986 0 0 0 11.054 3a5.986 5.986 0 0 0-3.612 1.003M3.606 6.315a48.667 48.667 0 0 1 16.788 0M19.23 7.25l-.887 11.898c-.1 1.332-1.121 2.352-2.45 2.352H8.106c-1.328 0-2.35-1.02-2.45-2.352L4.72 7.25M9.88 9.88h4.24" />
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    });
+
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh] hover:border-gray-300 hover:bg-gray-50/20 transition-all duration-200" 
+                             data-col-id="${col.id}" draggable="true" ondragstart="window.handleColumnDragStart(event)" ondragend="window.handleColumnDragEnd(event)"
+                             ondragover="window.handleColDragOver(event)" ondragleave="window.handleColDragLeave(event)" ondrop="window.handleColDrop(event)">
+                            <div class="flex justify-between items-center mb-4 select-none cursor-move">
+                                ${isFixed ? `<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>` : 
+                                `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text font-medium">`}
+                            </div>
+                            <div class="space-y-3 overflow-y-auto flex-1 pb-2 min-h-[50px] transition-colors" data-cards-zone="true">
+                                ${cardsHtml}
+                            </div>
+                            <div id="inline-card-input-container-${col.id}" class="hidden mb-2">
+                                <input type="text" id="inline-card-input-${col.id}" placeholder="Nom de la carte..." 
+                                       onkeydown="window.handleInlineCardKeyDown(event, ${col.id})"
+                                       onblur="window.saveInlineCard(${col.id})"
+                                       class="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
+                            </div>
+                            <button id="inline-card-btn-${col.id}" onclick="window.showInlineCardInput(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
+                        </div>
+                    `);
+                });
+            }
+
             window.showInlineCardInput = function(colId) {
                 document.getElementById(`inline-card-btn-${colId}`).classList.add('hidden');
                 const container = document.getElementById(`inline-card-input-container-${colId}`);
@@ -574,7 +664,7 @@
                 container.classList.remove('hidden');
                 input.value = '';
                 input.focus();
-                isInlineSavingMap[colId] = false; // Réinitialise le verrou
+                isInlineSavingMap[colId] = false;
             };
 
             window.handleInlineCardKeyDown = function(e, colId) {
@@ -586,15 +676,13 @@
                 }
             };
 
-            // FIX INTEGRAL DE LA DOUBLE SAISIE SYNCHRONE (ENTER + BLUR)
             window.saveInlineCard = async function(colId) {
-                if (isInlineSavingMap[colId]) return; // Si un enregistrement est en cours, on bloque
-
+                if (isInlineSavingMap[colId]) return;
                 const input = document.getElementById(`inline-card-input-${colId}`);
                 if (!input) return;
                 const text = input.value.trim();
                 
-                isInlineSavingMap[colId] = true; // Active le verrou d'écriture
+                isInlineSavingMap[colId] = true;
                 window.hideInlineCardInput(colId);
 
                 if (!text) {
@@ -603,10 +691,8 @@
                 }
 
                 const colCards = localCartes.filter(c => c.colonne_id === colId);
-                const nextPos = colCards.length;
-
-                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text, position: nextPos, notes: '' }]);
-                isInlineSavingMap[colId] = false; // Libère le verrou après persistance
+                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text, position: colCards.length, notes: '' }]);
+                isInlineSavingMap[colId] = false;
                 fetchAndRenderKanban();
             };
 
@@ -629,6 +715,14 @@
                     }
                 }
             };
+
+            document.addEventListener('dblclick', (e) => {
+                const cardEl = e.target.closest('.kanban-card');
+                if (cardEl) {
+                    const cardId = cardEl.getAttribute('data-card-id');
+                    if (cardId) window.openKanbanCardModal(parseInt(cardId));
+                }
+            });
 
             window.handleColumnDragStart = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
@@ -658,7 +752,7 @@
 
             window.handleCardDragEnd = function(e) {
                 const cardEl = e.target.closest('[data-card-id]');
-                if (cardEl) cardEl.classList.remove('kanban-ghost');
+                if (cardEl) classList.remove('kanban-ghost');
                 document.querySelectorAll('[data-cards-zone]').forEach(z => z.classList.remove('bg-gray-50/50'));
                 hideTrashZone();
             };
