@@ -5,17 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HUB Morgan 2026</title>
     
-    <!-- FAVICON (Logo dans les favoris et onglets) -->
     <link rel="icon" type="image/png" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     <link rel="apple-touch-icon" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -30,45 +25,31 @@
 </head>
 <body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100">
 
-    <!-- ========================================== -->
-    <!-- 1. ÉCRAN ACCUEIL : LE HUB PUBLIC           -->
-    <!-- ========================================== -->
     <div id="screen-hub" class="flex flex-col items-center justify-center min-h-screen px-6 bg-white">
-        <div class="text-center mb-10">
+        <div class="text-center mb-12 select-none">
             <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
                  alt="Morgan Logo" 
-                 class="w-16 h-16 object-cover rounded-2xl mx-auto border border-gray-100 p-0.5 bg-gray-50/30 mb-4">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Workspace Morgan</h1>
-            <p class="text-sm text-gray-400 mt-1">Brainsonic AI • Écosystème privé</p>
+                 class="w-20 h-20 object-cover rounded-2xl mx-auto border border-gray-100 p-0.5 bg-gray-50/30 mb-4 shadow-xs">
+            <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/bsai.png" 
+                 alt="Brainsonic AI" 
+                 class="h-4 object-contain mx-auto opacity-80 mt-2">
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-xl">
-            <!-- Bouton vers Reporting -->
-            <button onclick="requestAccess('reporting')" class="group flex flex-col items-start p-6 bg-white border border-gray-100 rounded-xl text-left hover:border-gray-300 transition-all cursor-pointer">
-                <span class="text-xl mb-2">📊</span>
-                <span class="text-base font-medium text-gray-900 group-hover:text-black">Reporting Ventes</span>
-                <span class="text-xs text-gray-400 mt-1">Suivi du chiffre d'affaires, graphiques mensuels et podium clients.</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
+            <button onclick="requestAccess('reporting')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
+                Reporting
             </button>
 
-            <!-- Bouton vers Kanban -->
-            <button onclick="requestAccess('kanban')" class="group flex flex-col items-start p-6 bg-white border border-gray-100 rounded-xl text-left hover:border-gray-300 transition-all cursor-pointer">
-                <span class="text-xl mb-2">📋</span>
-                <span class="text-base font-medium text-gray-900 group-hover:text-black">Espace Kanban</span>
-                <span class="text-xs text-gray-400 mt-1">Gestion des tâches, tableau de bord personnel type Trello.</span>
+            <button onclick="requestAccess('kanban')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
+                Gestion des tâches
             </button>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 2. ÉCRAN SÉCURISÉ : CONNEXION ÉTANCHÉE     -->
-    <!-- ========================================== -->
-    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/50 hidden">
-        <div class="bg-white p-8 rounded-xl border border-gray-200/80 shadow-xs w-full max-w-sm text-center">
-            <div class="mb-4">
-                <span id="auth-app-icon" class="text-3xl">🔑</span>
-            </div>
-            <h2 id="auth-app-title" class="text-xl font-medium tracking-tight text-gray-900 mb-2">Accès Sécurisé</h2>
-            <p class="text-xs text-gray-400 mb-6">Veuillez saisir le mot de passe dédié pour cette application.</p>
+    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/30 hidden">
+        <div class="bg-white p-8 rounded-xl border border-gray-200/80 w-full max-w-sm text-center">
+            <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Sécurisé</h2>
+            <p class="text-xs text-gray-400 mb-6">Veuillez saisir le mot de passe de cette application.</p>
             
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
@@ -76,30 +57,27 @@
                            class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
                     <button type="button" id="btn-toggle-pwd" class="absolute right-3 text-gray-400 hover:text-gray-600 text-sm cursor-pointer select-none">👁️</button>
                 </div>
-                <button type="submit" class="w-full bg-[#191919] hover:bg-black text-white text-sm py-2 px-4 rounded-lg transition-all cursor-pointer">
+                <button type="submit" class="w-full bg-[#191919] hover:bg-black text-white text-sm py-2 px-4 rounded-lg transition-all cursor-pointer font-medium">
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-500 hidden mt-2">Mot de passe incorrect</p>
-                <button type="button" onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-600 block mx-auto mt-4 transition-colors">Retour au HUB</button>
+                <button type="button" onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-600 block mx-auto mt-5 transition-colors">Retour au HUB</button>
             </form>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 3. MODULE APPLICATION : REPORTING          -->
-    <!-- ========================================== -->
     <div id="screen-reporting" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
                 <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" alt="Logo" class="w-14 h-14 object-cover rounded-xl border border-gray-100 p-0.5 bg-gray-50/30 shrink-0">
                 <div class="flex flex-col justify-between py-0.5">
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 leading-none">Reporting Morgan 2026</h1>
-                    <p class="text-sm text-gray-500 mt-1.5 leading-none">Brainsonic AI</p>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 leading-none">Reporting Morgan 2026</h1>
+                    <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/bsai.png" alt="Brainsonic AI" class="h-3 object-contain opacity-60 mt-2 self-start">
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="logoutApp('reporting')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer">Quitter l'app</button>
-                <button onclick="openReportingForm()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">Push</button>
+            <div class="flex items-center gap-3">
+                <button onclick="logoutApp('reporting')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer mr-2">Quitter l'app</button>
+                <button onclick="openReportingForm()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer font-medium">Push</button>
             </div>
         </div>
 
@@ -132,23 +110,23 @@
         </div>
 
         <div class="bg-white rounded-xl border border-gray-100 overflow-hidden mb-12">
-            <div class="py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div class="py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 px-4">
                 <div><h3 class="text-sm font-medium text-gray-900">Détail des affaires</h3></div>
                 <div class="flex items-center gap-2.5 w-full sm:w-auto">
-                    <input type="text" id="table-search" placeholder="Rechercher..." class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-1.5 text-xs focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400">
-                    <button id="btn-export-csv" class="border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">Export CSV</button>
+                    <input type="text" id="table-search" placeholder="Rechercher..." class="w-full sm:w-48 bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-1.5 text-xs focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400">
+                    <button id="btn-export-csv" class="border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer shrink-0">Export CSV</button>
                 </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium tracking-wider">
-                            <th class="py-3 pr-4 font-medium">Date</th>
+                            <th class="py-3 pl-4 pr-4 font-medium">Date</th>
                             <th class="py-3 px-4 font-medium">Client</th>
                             <th class="py-3 px-4 text-right font-medium">Tarif</th>
                             <th class="py-3 px-4 font-medium">Description</th>
                             <th class="py-3 px-4 font-medium">Source</th>
-                            <th class="py-3 pl-4 font-medium">Affaire Furious</th>
+                            <th class="py-3 pr-4 font-medium">Affaire Furious</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-100 text-xs text-gray-700"></tbody>
@@ -157,11 +135,10 @@
         </div>
     </div>
 
-    <!-- FORMULAIRE REPORTING -->
     <div id="screen-reporting-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-                <h2 id="reporting-form-title" class="text-base font-medium text-gray-900">Nouvelle Entrée</h2>
+                <h2 id="reporting-form-title" class="text-sm font-medium text-gray-900">Nouvelle Entrée</h2>
                 <button onclick="closeReportingForm()" class="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Retour</button>
             </div>
             <form id="insert-form" class="space-y-5">
@@ -195,7 +172,7 @@
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" id="btn-delete-form" class="hidden flex-1 border border-red-200 hover:bg-red-50 text-red-600 py-2 px-4 rounded-lg text-xs cursor-pointer">Supprimer</button>
-                    <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs cursor-pointer">Enregistrer</button>
+                    <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs cursor-pointer font-medium">Enregistrer</button>
                 </div>
             </form>
             <div id="form-success-container" class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-lg text-center hidden">
@@ -204,47 +181,40 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 4. MODULE APPLICATION : KANBAN WORKSPACE   -->
-    <!-- ========================================== -->
     <div id="screen-kanban" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
                 <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" alt="Logo" class="w-14 h-14 object-cover rounded-xl border border-gray-100 p-0.5 bg-gray-50/30 shrink-0">
                 <div class="flex flex-col justify-between py-0.5">
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Espace Kanban</h1>
-                    <p class="text-sm text-gray-500 mt-1.5 leading-none">Gestion de projets & Backlog</p>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900">Gestion des tâches</h1>
+                    <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/bsai.png" alt="Brainsonic AI" class="h-3 object-contain opacity-60 mt-2 self-start">
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="logoutApp('kanban')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer">Quitter l'app</button>
-                <button onclick="createKanbanColumn()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">+ Ajouter une colonne</button>
+            <div class="flex items-center gap-3">
+                <button onclick="logoutApp('kanban')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer mr-2">Quitter l'app</button>
+                <button onclick="createKanbanColumn()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer font-medium">+ Ajouter une colonne</button>
             </div>
         </div>
 
-        <!-- Kanban Board Container -->
         <div id="kanban-board-container" class="flex gap-6 overflow-x-auto pb-6 items-start">
-            <!-- Injecté dynamiquement par JS -->
-        </div>
+            </div>
     </div>
 
-    <!-- MODALE KANBAN POUR ÉDITION DE CARTE -->
-    <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/20 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+    <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/10 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
-            <h3 class="text-sm font-medium uppercase tracking-wider text-gray-400 mb-4">Modifier la carte</h3>
+            <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Modifier la carte</h3>
             <input type="hidden" id="modal-card-id">
             <textarea id="modal-card-textarea" rows="4" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-xs focus:outline-none focus:border-gray-400 text-gray-900 mb-4"></textarea>
             <div class="flex justify-between gap-3">
                 <button onclick="deleteKanbanCardFromModal()" class="border border-red-200 text-red-600 hover:bg-red-50 text-xs px-3 py-2 rounded-lg cursor-pointer">Supprimer</button>
                 <div class="flex gap-2">
                     <button onclick="closeKanbanCardModal()" class="border border-gray-200 text-gray-500 text-xs px-3 py-2 rounded-lg cursor-pointer">Annuler</button>
-                    <button onclick="saveKanbanCardFromModal()" class="bg-[#191919] hover:bg-black text-white text-xs px-4 py-2 rounded-lg cursor-pointer">Sauvegarder</button>
+                    <button onclick="saveKanbanCardFromModal()" class="bg-[#191919] hover:bg-black text-white text-xs px-4 py-2 rounded-lg cursor-pointer font-medium">Sauvegarder</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- LOGIQUE LOGICIELLE LOGÉE UNIQUE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -256,7 +226,7 @@
             let chartInstance = null;
             let podiumChartInstance = null;
             let globalVentes = [];
-            let currentAuthContext = null; // 'reporting' ou 'kanban'
+            let currentAuthContext = null;
 
             const monthsOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
@@ -283,8 +253,7 @@
                 } else {
                     passwordInput.value = '';
                     authError.classList.add('hidden');
-                    document.getElementById('auth-app-title').innerText = app === 'reporting' ? 'Accès Reporting Ventes' : 'Accès Espace Kanban';
-                    document.getElementById('auth-app-icon').innerText = app === 'reporting' ? '📊' : '📋';
+                    document.getElementById('auth-app-title').innerText = app === 'reporting' ? 'Accès Reporting' : 'Accès Gestion des tâches';
                     scrHub.classList.add('hidden');
                     scrAuth.classList.remove('hidden');
                 }
@@ -329,7 +298,7 @@
                 }
             });
 
-            // Soumission Authentification Compartimentée
+            // Soumission Authentification
             authForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (passwordInput.value.trim() === '1234') {
@@ -525,7 +494,6 @@
 
                     renderTableRows(globalVentes);
 
-                    // Charts Rendu Isolé Réfléchi
                     if (chartInstance) chartInstance.destroy();
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
@@ -556,16 +524,14 @@
                 } catch(err) { console.error(err); }
             }
 
-            // --- CODE MODULE : KANBAN ENGINE (DRAG & DROP HTML5) ---
+            // --- CODE MODULE : KANBAN ENGINE ---
             let localColonnes = [];
             let localCartes = [];
             let draggedCardId = null;
 
             async function fetchAndRenderKanban() {
                 try {
-                    // Initialisation : On s'assure qu'au moins la colonne "Mes Notes" existe
                     const { data: cols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
-                    
                     if (!cols || cols.length === 0) {
                         await supabase.from('kanban_colonnes').insert([{ id: 1, titre: 'Mes Notes', position: 0 }]);
                     }
@@ -611,7 +577,6 @@
                                 `}
                             </div>
                             
-                            <!-- Espace cartes déroulable -->
                             <div class="space-y-3 overflow-y-auto flex-1 pb-4 min-h-[50px] transition-colors" data-cards-zone="true">
                                 ${cardsHtml}
                             </div>
@@ -656,7 +621,6 @@
                 fetchAndRenderKanban();
             };
 
-            // Drag & Drop Handling Natif
             window.handleCardDragStart = function(e) {
                 draggedCardId = e.target.getAttribute('data-card-id');
                 e.target.classList.add('kanban-ghost');
@@ -684,19 +648,15 @@
                 const colId = e.currentTarget.getAttribute('data-col-id');
                 if (!draggedCardId || !colId) return;
 
-                // Update locale immédiate pour fluidité visuelle (Vibe)
                 const targetCard = localCartes.find(c => c.id == draggedCardId);
                 if (targetCard && targetCard.colonne_id != colId) {
                     targetCard.colonne_id = parseInt(colId);
-                    
-                    // Mutation asynchrone Supabase
                     await supabase.from('kanban_cartes').update({ colonne_id: parseInt(colId) }).eq('id', draggedCardId);
                     fetchAndRenderKanban();
                 }
                 draggedCardId = null;
             };
 
-            // Modale d'Édition
             const cardModal = document.getElementById('kanban-card-modal');
             const modalTextarea = document.getElementById('modal-card-textarea');
             const modalHiddenId = document.getElementById('modal-card-id');
