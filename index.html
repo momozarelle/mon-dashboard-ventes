@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HUB Morgan 2026</title>
     
+    <!-- FAVICON (Logo dans les favoris et onglets) -->
     <link rel="icon" type="image/png" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     <link rel="apple-touch-icon" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -18,10 +23,9 @@
             -webkit-font-smoothing: antialiased;
         }
         .kanban-ghost {
-            opacity: 0.4;
+            opacity: 0.3;
             border: 1px dashed #191919;
         }
-        /* Style d'affichage de la poubelle au survol de la carte */
         .kanban-card .delete-btn {
             opacity: 0;
             transition: opacity 0.15s ease-in-out;
@@ -29,20 +33,37 @@
         .kanban-card:hover .delete-btn {
             opacity: 1;
         }
+        /* Overlay graduant rouge discret pour la suppression de colonne */
+        #trash-overlay {
+            pointer-events: none;
+            transition: background-color 0.25s ease-in-out;
+        }
+        body.trash-active #trash-overlay {
+            background-color: rgba(239, 68, 68, 0.05);
+        }
     </style>
 </head>
-<body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100">
+<body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100 transition-colors duration-200">
 
+    <!-- Overlay de gradation rouge lors de la destruction d'une colonne -->
+    <div id="trash-overlay" class="fixed inset-0 z-40"></div>
+
+    <!-- ========================================== -->
+    <!-- 1. ÉCRAN ACCUEIL : LE HUB PUBLIC           -->
+    <!-- ========================================== -->
     <div id="screen-hub" class="flex flex-col items-center justify-center min-h-screen px-6 bg-white">
         <div class="text-center mb-14 select-none">
+            <!-- Photo pixel art -->
             <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
                  alt="Morgan Logo" 
                  class="w-36 h-36 object-cover rounded-3xl mx-auto border border-gray-100 p-1 bg-gray-50/30 mb-6 shadow-xs">
             
+            <!-- Logo Brainsonic AI (bsai2) -->
             <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/bsai2.png" 
                  alt="Brainsonic AI" 
                  class="h-18 object-contain mx-auto opacity-95 mt-2">
                  
+            <!-- Titre Workspace Morgan 2026 -->
             <h1 class="text-2xl tracking-widest text-gray-400 font-light mt-4">Workspace Morgan 2026</h1>
         </div>
 
@@ -50,13 +71,15 @@
             <button onclick="requestAccess('reporting')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Reporting
             </button>
-
             <button onclick="requestAccess('kanban')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-900 hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Gestion des tâches
             </button>
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 2. ÉCRAN SÉCURISÉ : CONNEXION ÉTANCHÉE     -->
+    <!-- ========================================== -->
     <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/30 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 w-full max-w-sm text-center">
             <h2 id="auth-app-title" class="text-base font-medium tracking-tight text-gray-900 mb-1">Accès Sécurisé</h2>
@@ -65,8 +88,17 @@
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
                     <input type="password" id="auth-password" placeholder="Mot de passe" required
-                           class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
-                    <button type="button" id="btn-toggle-pwd" class="absolute right-3 text-gray-400 hover:text-gray-600 text-sm cursor-pointer select-none">👁️</button>
+                           class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-gray-400 text-gray-900 transition-all">
+                    <!-- Oeil SVG épuré et minimaliste -->
+                    <button type="button" id="btn-toggle-pwd" class="absolute right-3 text-gray-400 hover:text-gray-900 cursor-pointer select-none">
+                        <svg id="svg-eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644yM12 18.75c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                        </svg>
+                        <svg id="svg-eye-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 hidden">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 17.772 17.772M15.212 15.212a3.001 3.001 0 1 1-4.242-4.242" />
+                        </svg>
+                    </button>
                 </div>
                 <button type="submit" class="w-full bg-[#191919] hover:bg-black text-white text-sm py-2 px-4 rounded-lg transition-all cursor-pointer font-medium">
                     Se connecter
@@ -77,6 +109,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 3. MODULE APPLICATION : REPORTING          -->
+    <!-- ========================================== -->
     <div id="screen-reporting" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -88,11 +123,11 @@
             </div>
             <div class="flex items-center gap-3">
                 <button onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer mr-2">Retour au Hub</button>
-                <button onclick="logoutApp('reporting')" class="text-xs text-gray-400 hover:text-red-600 transition-colors font-medium cursor-pointer mr-2">Quitter l'app</button>
                 <button onclick="openReportingForm()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer font-medium">Push</button>
             </div>
         </div>
 
+        <!-- KPIs Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div class="border border-gray-100 p-5 rounded-xl bg-white">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">CA Morgan</p>
@@ -147,14 +182,12 @@
         </div>
     </div>
 
+    <!-- FORMULAIRE REPORTING -->
     <div id="screen-reporting-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
                 <h2 id="reporting-form-title" class="text-sm font-medium text-gray-900">Nouvelle Entrée</h2>
-                <div class="flex items-center gap-3">
-                    <button onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-900 cursor-pointer">Retour au Hub</button>
-                    <button onclick="closeReportingForm()" class="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Retour App</button>
-                </div>
+                <button onclick="closeReportingForm()" class="text-xs text-gray-400 hover:text-gray-900 cursor-pointer">Retour App</button>
             </div>
             <form id="insert-form" class="space-y-5">
                 <input type="hidden" id="form-id">
@@ -190,12 +223,12 @@
                     <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs cursor-pointer font-medium">Enregistrer</button>
                 </div>
             </form>
-            <div id="form-success-container" class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-lg text-center hidden">
-                <p class="text-xs text-gray-600">Enregistré avec succès.</p>
-            </div>
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 4. MODULE APPLICATION : KANBAN WORKSPACE   -->
+    <!-- ========================================== -->
     <div id="screen-kanban" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
@@ -205,17 +238,37 @@
                     <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/bsai2.png" alt="Brainsonic AI" class="h-7 object-contain opacity-90 mt-2 self-start">
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer mr-2">Retour au Hub</button>
-                <button onclick="logoutApp('kanban')" class="text-xs text-gray-400 hover:text-red-600 transition-colors font-medium cursor-pointer mr-2">Quitter l'app</button>
-                <button onclick="createKanbanColumn()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer font-medium">+ Ajouter une colonne</button>
+            <div>
+                <button onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer">Retour au Hub</button>
             </div>
         </div>
 
-        <div id="kanban-board-container" class="flex gap-6 overflow-x-auto pb-6 items-start">
+        <!-- Kanban Board Area flex-row -->
+        <div class="flex gap-6 overflow-x-auto pb-16 items-start relative min-h-[60vh]">
+            <div id="kanban-board-container" class="flex gap-6 items-start">
+                <!-- Injecté dynamiquement par JS -->
             </div>
+            
+            <!-- Petit bouton "+" positionné à la suite immédiate de la colonne la plus à droite -->
+            <button onclick="createKanbanColumn()" class="w-12 h-12 shrink-0 border border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all cursor-pointer text-xl font-light">
+                +
+            </button>
+        </div>
+
+        <!-- Zone Poubelle Fixe Épurée en bas de l'écran pour les colonnes -->
+        <div id="kanban-column-trash-zone" 
+             ondragover="handleColumnTrashOver(event)" 
+             ondragleave="handleColumnTrashLeave(event)" 
+             ondrop="handleColumnTrashDrop(event)"
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-sm rounded-full px-8 py-3.5 flex items-center gap-2 text-xs text-gray-400 transition-all z-50 pointer-events-none opacity-0 transform translate-y-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400 transition-colors" id="trash-icon-svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6.14m-4.02 0L10 9m4.665-3.012A5.986 5.986 0 0 0 11.054 3a5.986 5.986 0 0 0-3.612 1.003M3.606 6.315a48.667 48.667 0 0 1 16.788 0M19.23 7.25l-.887 11.898c-.1 1.332-1.121 2.352-2.45 2.352H8.106c-1.328 0-2.35-1.02-2.45-2.352L4.72 7.25M9.88 9.88h4.24" />
+            </svg>
+            <span class="font-medium tracking-wide font-mono uppercase text-[10px]">Glisser ici pour détruire la colonne</span>
+        </div>
     </div>
 
+    <!-- MODALE KANBAN ENRICHIE POUR ÉDITION DE CARTE -->
     <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/10 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Détails de la carte</h3>
@@ -238,6 +291,7 @@
         </div>
     </div>
 
+    <!-- LOGIQUE LOGICIELLE UNIQUE PARTAGÉE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -309,14 +363,19 @@
                 navigateBackToHub();
             };
 
+            // Toggle Affichage Mot de Passe avec icones SVG épurées
             togglePwdBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                const eyeOpen = document.getElementById('svg-eye-open');
+                const eyeClosed = document.getElementById('svg-eye-closed');
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
-                    togglePwdBtn.innerText = '🙈';
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
                 } else {
                     passwordInput.type = 'password';
-                    togglePwdBtn.innerText = '👁️';
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
                 }
             });
 
@@ -340,7 +399,6 @@
                 document.getElementById('btn-delete-form').classList.add('hidden');
                 document.getElementById('insert-form').reset();
                 document.getElementById('form-date').value = "Janvier 2026";
-                document.getElementById('form-success-container').classList.add('hidden');
                 scrReporting.classList.add('hidden');
                 scrReportingForm.classList.remove('hidden');
             };
@@ -367,7 +425,6 @@
                 document.getElementById('form-description').value = currentItem.description || '';
                 document.getElementById('form-source').value = currentItem.source || 'Brainsonic';
 
-                document.getElementById('form-success-container').classList.add('hidden');
                 scrReporting.classList.add('hidden');
                 scrReportingForm.classList.remove('hidden');
             };
@@ -403,8 +460,7 @@
                 }
 
                 if (!resError) {
-                    document.getElementById('form-success-container').classList.remove('hidden');
-                    setTimeout(() => closeReportingForm(), 1000);
+                    setTimeout(() => closeReportingForm(), 200);
                 }
             });
 
@@ -545,10 +601,11 @@
                 } catch(err) { console.error(err); }
             }
 
-            // --- ENGINE CORE KANBAN WORKSPACE ---
+            // --- MODULE WORKSPACE KANBAN ---
             let localColonnes = [];
             let localCartes = [];
             let draggedCardId = null;
+            let draggedColumnId = null;
 
             async function fetchAndRenderKanban() {
                 try {
@@ -581,7 +638,6 @@
                             <div class="kanban-card bg-white border border-gray-100 p-3 rounded-lg cursor-grab active:cursor-grabbing text-xs text-gray-800 font-normal hover:border-gray-300 transition-all select-none flex justify-between items-start gap-2 relative group" 
                                  draggable="true" data-card-id="${card.id}" ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ondoubleclick="window.openKanbanCardModal(${card.id})">
                                 <span class="flex-1 truncate pr-4">${card.contenu}</span>
-                                
                                 <button onclick="event.stopPropagation(); window.deleteKanbanCardDirect(${card.id})" class="delete-btn text-gray-300 hover:text-black transition-colors duration-150 absolute right-2.5 top-3 cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6.14m-4.02 0L10 9m4.665-3.012A5.986 5.986 0 0 0 11.054 3a5.986 5.986 0 0 0-3.612 1.003M3.606 6.315a48.667 48.667 0 0 1 16.788 0M19.23 7.25l-.887 11.898c-.1 1.332-1.121 2.352-2.45 2.352H8.106c-1.328 0-2.35-1.02-2.45-2.352L4.72 7.25M9.88 9.88h4.24" />
@@ -591,16 +647,23 @@
                         `;
                     });
 
+                    // Têtes de colonnes maintenant déplaçables (draggable="true")
                     const colHtml = `
                         <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh]" 
-                             data-col-id="${col.id}" ondragover="handleColDragOver(event)" ondragleave="handleColDragLeave(event)" ondrop="handleColDrop(event)">
-                            <div class="flex justify-between items-center mb-4 select-none">
+                             data-col-id="${col.id}" 
+                             draggable="true"
+                             ondragstart="handleColumnDragStart(event)"
+                             ondragend="handleColumnDragEnd(event)"
+                             ondragover="handleColDragOver(event)" 
+                             ondragleave="handleColDragLeave(event)" 
+                             ondrop="handleColDrop(event)">
+                            
+                            <div class="flex justify-between items-center mb-4 select-none cursor-move">
                                 ${isFixed ? `
                                     <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>
                                 ` : `
                                     <input type="text" value="${col.titre}" onchange="renameKanbanColumn(${col.id}, this.value)" 
-                                           class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2">
-                                    <button onclick="deleteKanbanColumn(${col.id})" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer">✕</button>
+                                           class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text">
                                 `}
                             </div>
                             
@@ -615,6 +678,61 @@
                 });
             }
 
+            // --- DRAG & DROP DES COLONNES ---
+            window.handleColumnDragStart = function(e) {
+                // On s'assure qu'on attrape le conteneur complet de la colonne
+                const colEl = e.target.closest('[data-col-id]');
+                draggedColumnId = colEl.getAttribute('data-col-id');
+                colEl.classList.add('opacity-40');
+                
+                // Rendre visible la zone poubelle en bas
+                const trashZone = document.getElementById('kanban-column-trash-zone');
+                if (draggedColumnId != 1) { // Pas de poubelle pour "Mes Notes"
+                    trashZone.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    trashZone.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                }
+            };
+
+            window.handleColumnDragEnd = function(e) {
+                const colEl = e.target.closest('[data-col-id]');
+                if (colEl) colEl.classList.remove('opacity-40');
+                
+                // Masquer la zone poubelle
+                const trashZone = document.getElementById('kanban-column-trash-zone');
+                trashZone.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                trashZone.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                
+                document.body.classList.remove('trash-active');
+                document.getElementById('trash-icon-svg').classList.remove('text-red-500');
+                draggedColumnId = null;
+            };
+
+            // Zone de survol de la poubelle colonne
+            window.handleColumnTrashOver = function(e) {
+                e.preventDefault();
+                if (draggedColumnId && draggedColumnId != 1) {
+                    document.body.classList.add('trash-active');
+                    document.getElementById('trash-icon-svg').classList.add('text-red-500');
+                }
+            };
+
+            window.handleColumnTrashLeave = function(e) {
+                document.body.classList.remove('trash-active');
+                document.getElementById('trash-icon-svg').classList.remove('text-red-500');
+            };
+
+            window.handleColumnTrashDrop = async function(e) {
+                e.preventDefault();
+                if (!draggedColumnId || draggedColumnId == 1) return;
+
+                document.body.classList.remove('trash-active');
+                if (confirm("Voulez-vous vraiment supprimer la colonne et son contenu ?")) {
+                    await supabase.from('kanban_colonnes').delete().eq('id', draggedColumnId);
+                    fetchAndRenderKanban();
+                }
+            };
+
+            // --- LOGIQUE ACTIONS LOGICIELLES ---
             window.createKanbanColumn = async function() {
                 const titre = prompt("Nom de la nouvelle colonne :");
                 if (!titre || !titre.trim()) return;
@@ -627,13 +745,6 @@
             window.renameKanbanColumn = async function(id, val) {
                 if (!val || !val.trim()) return;
                 await supabase.from('kanban_colonnes').update({ titre: val.trim() }).eq('id', id);
-                fetchAndRenderKanban();
-            };
-
-            window.deleteKanbanColumn = async function(id) {
-                if (id === 1) return;
-                if (!confirm("Supprimer cette colonne et toutes ses cartes ?")) return;
-                await supabase.from('kanban_colonnes').delete().eq('id', id);
                 fetchAndRenderKanban();
             };
 
@@ -654,6 +765,7 @@
                 fetchAndRenderKanban();
             };
 
+            // --- DRAG & DROP DES CARTES ---
             window.handleCardDragStart = function(e) {
                 draggedCardId = e.target.getAttribute('data-card-id');
                 e.target.classList.add('kanban-ghost');
@@ -667,8 +779,11 @@
 
             window.handleColDragOver = function(e) {
                 e.preventDefault();
-                const zone = e.currentTarget.querySelector('[data-cards-zone]');
-                if (zone) zone.classList.add('bg-gray-50/50');
+                // Différenciation : Si c'est un drag de carte, on surligne la zone
+                if (draggedCardId) {
+                    const zone = e.currentTarget.querySelector('[data-cards-zone]');
+                    if (zone) zone.classList.add('bg-gray-50/50');
+                }
             };
 
             window.handleColDragLeave = function(e) {
@@ -678,19 +793,38 @@
 
             window.handleColDrop = async function(e) {
                 e.preventDefault();
-                const colId = e.currentTarget.getAttribute('data-col-id');
-                if (!draggedCardId || !colId) return;
-
-                const targetCard = localCartes.find(c => c.id == draggedCardId);
-                if (targetCard && targetCard.colonne_id != colId) {
-                    targetCard.colonne_id = parseInt(colId);
-                    await supabase.from('kanban_cartes').update({ colonne_id: parseInt(colId) }).eq('id', draggedCardId);
-                    fetchAndRenderKanban();
+                const targetColId = e.currentTarget.getAttribute('data-col-id');
+                
+                // Cas 1 : On drop une carte dans une colonne
+                if (draggedCardId && targetColId) {
+                    const targetCard = localCartes.find(c => c.id == draggedCardId);
+                    if (targetCard && targetCard.colonne_id != targetColId) {
+                        targetCard.colonne_id = parseInt(targetColId);
+                        await supabase.from('kanban_cartes').update({ colonne_id: parseInt(targetColId) }).eq('id', draggedCardId);
+                        fetchAndRenderKanban();
+                    }
+                    draggedCardId = null;
                 }
-                draggedCardId = null;
+                
+                // Cas 2 : Interversion de colonnes (Tri horizontal)
+                if (draggedColumnId && targetColId && draggedColumnId != targetColId) {
+                    const colSource = localColonnes.find(c => c.id == draggedColumnId);
+                    const colTarget = localColonnes.find(c => c.id == targetColId);
+                    
+                    if (colSource && colTarget) {
+                        const oldPos = colSource.position;
+                        colSource.position = colTarget.position;
+                        colTarget.position = oldPos;
+                        
+                        await supabase.from('kanban_colonnes').update({ position: colSource.position }).eq('id', colSource.id);
+                        await supabase.from('kanban_colonnes').update({ position: colTarget.position }).eq('id', colTarget.id);
+                        fetchAndRenderKanban();
+                    }
+                    draggedColumnId = null;
+                }
             };
 
-            // Gestion de la modale enrichie (Titre + Notes) rattachée à window pour éviter les conflits
+            // Modale d'Édition
             const cardModal = document.getElementById('kanban-card-modal');
             const modalCardTitleInput = document.getElementById('modal-card-title-input');
             const modalNotesTextarea = document.getElementById('modal-card-notes-textarea');
