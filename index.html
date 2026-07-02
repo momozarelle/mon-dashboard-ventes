@@ -28,7 +28,7 @@
         .kanban-card:hover .delete-btn {
             opacity: 1;
         }
-        /* Overlay graduant rouge discret pour la suppression de colonne */
+        /* Overlay graduant rouge discret lors du survol de la zone poubelle */
         #trash-overlay {
             pointer-events: none;
             transition: background-color 0.25s ease-in-out;
@@ -236,7 +236,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400 transition-colors" id="trash-icon-svg">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6.14m-4.02 0L10 9m4.665-3.012A5.986 5.986 0 0 0 11.054 3a5.986 5.986 0 0 0-3.612 1.003M3.606 6.315a48.667 48.667 0 0 1 16.788 0M19.23 7.25l-.887 11.898c-.1 1.332-1.121 2.352-2.45 2.352H8.106c-1.328 0-2.35-1.02-2.45-2.352L4.72 7.25M9.88 9.88h4.24" />
             </svg>
-            <span class="font-medium tracking-wide font-mono uppercase text-[10px]">Glisser ici pour détruire la colonne</span>
+            <span class="font-medium tracking-wide font-mono uppercase text-[10px]">Glisser ici pour détruire la colonne ou la carte</span>
         </div>
     </div>
 
@@ -277,7 +277,6 @@
 
             const monthsOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-            // Écrans DOM
             const scrHub = document.getElementById('screen-hub');
             const scrAuth = document.getElementById('screen-auth');
             const scrReporting = document.getElementById('screen-reporting');
@@ -290,21 +289,13 @@
             const authError = document.getElementById('auth-error');
             const searchInput = document.getElementById('table-search');
 
-            // --- PERSISTANCE AUTHENTIFICATION 24 HEURES ---
+            // --- PERSISTANCE 24 HEURES ---
             function isSessionValid(app) {
                 const sessionKey = app === 'reporting' ? 'auth_reporting_time' : 'auth_kanban_time';
                 const savedTime = localStorage.getItem(sessionKey);
                 if (!savedTime) return false;
-                
                 const now = new Date().getTime();
-                const twentyFourHours = 24 * 60 * 60 * 1000; // 24h en millisecondes
-                
-                if (now - parseInt(savedTime) < twentyFourHours) {
-                    return true;
-                } else {
-                    localStorage.removeItem(sessionKey);
-                    return false;
-                }
+                return (now - parseInt(savedTime) < 24 * 60 * 60 * 1000);
             }
 
             function setSessionActive(app) {
@@ -314,7 +305,6 @@
 
             window.requestAccess = function(app) {
                 currentAuthContext = app;
-                
                 if (isSessionValid(app)) {
                     openApp(app);
                 } else {
@@ -347,7 +337,6 @@
                 }
             }
 
-            // Oeil de mot de passe épuré toggle
             togglePwdBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const eyeOpen = document.getElementById('svg-eye-open');
@@ -374,7 +363,7 @@
                 }
             });
 
-            // --- MODULE REPORTING EXEC ---
+            // --- REPORTING ACTIONS ---
             window.openReportingForm = function() {
                 document.getElementById('form-id').value = '';
                 document.getElementById('reporting-form-title').innerText = "Nouvelle Entrée";
@@ -395,28 +384,23 @@
             window.openEditMode = function(id) {
                 const currentItem = globalVentes.find(v => v.id === id);
                 if (!currentItem) return;
-
                 document.getElementById('form-id').value = currentItem.id;
                 document.getElementById('reporting-form-title').innerText = "Modifier l'entrée";
                 document.getElementById('btn-submit-form').innerText = "Mettre à jour";
                 document.getElementById('btn-delete-form').classList.remove('hidden');
-                
                 document.getElementById('form-date').value = currentItem.date || '';
                 document.getElementById('form-client').value = currentItem.client || '';
                 document.getElementById('form-tarif').value = currentItem.montant || 0;
                 document.getElementById('form-furious').value = currentItem.furious || '';
                 document.getElementById('form-description').value = currentItem.description || '';
                 document.getElementById('form-source').value = currentItem.source || 'Brainsonic';
-
                 scrReporting.classList.add('hidden');
                 scrReportingForm.classList.remove('hidden');
             };
 
             document.getElementById('btn-delete-form').addEventListener('click', async () => {
                 const id = document.getElementById('form-id').value;
-                if (!id) return;
-                if (!confirm("Supprimer définitivement cette ligne ?")) return;
-
+                if (!id || !confirm("Supprimer définitivement cette ligne ?")) return;
                 const { error } = await supabase.from('ventes').delete().eq('id', id);
                 if (!error) closeReportingForm();
             });
@@ -432,19 +416,12 @@
                     description: document.getElementById('form-description').value,
                     source: document.getElementById('form-source').value
                 };
-
-                let resError = null;
                 if (targetId) {
-                    const { error } = await supabase.from('ventes').update(payload).eq('id', targetId);
-                    resError = error;
+                    await supabase.from('ventes').update(payload).eq('id', targetId);
                 } else {
-                    const { error } = await supabase.from('ventes').insert([payload]);
-                    resError = error;
+                    await supabase.from('ventes').insert([payload]);
                 }
-
-                if (!resError) {
-                    setTimeout(() => closeReportingForm(), 200);
-                }
+                setTimeout(() => closeReportingForm(), 200);
             });
 
             if (searchInput) {
@@ -464,9 +441,8 @@
 
             document.getElementById('btn-export-csv').addEventListener('click', () => {
                 if (globalVentes.length === 0) return;
-                const sorted = sortChronologically(globalVentes);
                 let csvContent = "Date;Client;Tarif (EUR);Description;Source;Affaire Furious\r\n";
-                sorted.forEach(v => {
+                sortChronologically(globalVentes).forEach(v => {
                     csvContent += `"${(v.date || '')}";"${(v.client || '')}";${v.montant || 0};"${(v.description || '').replace(/[\r\n]+/g, ' ')}";"${v.source || ''}";"${v.furious || ''}"\r\n`;
                 });
                 const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
@@ -518,7 +494,6 @@
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
                     if (error || !ventes || ventes.length === 0) return;
-
                     globalVentes = ventes;
                     let totalCA = 0, totalEBG = 0, totalDirect = 0;
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
@@ -533,6 +508,10 @@
                             if (String(v.date).toLowerCase().includes(m.toLowerCase())) { mFound = m; break; }
                         }
                         if (mFound) monthlyData[mFound] += val;
+                        if (v.client) {
+                            let cl = v.client.trim();
+                            if (cl) clientAggregation[cl] = (clientAggregation[cl] || 0) + val;
+                        }
                     });
 
                     document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} €`;
@@ -540,13 +519,6 @@
                     document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} €`;
                     document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
                     document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
-
-                    ventes.forEach(v => {
-                        if (v.client) {
-                            let cl = v.client.trim();
-                            if (cl) clientAggregation[cl] = (clientAggregation[cl] || 0) + parseFloat(v.montant || 0);
-                        }
-                    });
 
                     const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
                     let podiumLabels = ['-', '-', '-'], podiumData = [0, 0, 0];
@@ -559,34 +531,20 @@
                     if (chartInstance) chartInstance.destroy();
                     chartInstance = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
-                        data: {
-                            labels: monthsOrder,
-                            datasets: [{ data: monthsOrder.map(m => monthlyData[m]), backgroundColor: '#191919', hoverBackgroundColor: '#000000', borderRadius: 2 }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#191919', callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } }, datalabels: { display: false } },
-                            scales: { y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { callback: (v) => v.toLocaleString('fr-FR') + ' €' } }, x: { grid: { display: false } } }
-                        }
+                        data: { labels: monthsOrder, datasets: [{ data: monthsOrder.map(m => monthlyData[m]), backgroundColor: '#191919', hoverBackgroundColor: '#000000', borderRadius: 2 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } }, datalabels: { display: false } }, scales: { y: { ticks: { callback: (v) => v.toLocaleString('fr-FR') + ' €' } } } }
                     });
 
                     if (podiumChartInstance) podiumChartInstance.destroy();
                     podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
                         type: 'bar',
                         data: { labels: podiumLabels, datasets: [{ data: podiumData, backgroundColor: ['#191919', '#191919', '#191919'], borderRadius: 6, barPercentage: 0.65 }] },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
-                            plugins: {
-                                legend: { display: false }, tooltip: { backgroundColor: '#191919', callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } },
-                                datalabels: { display: true, align: 'top', anchor: 'end', color: '#111827', font: { weight: 'bold', size: 11 }, formatter: (v) => v > 0 ? `${v.toLocaleString('fr-FR')} €` : '' }
-                            },
-                            scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#191919', font: { size: 11 } } } }
-                        }
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: true, align: 'top', anchor: 'end', color: '#111827', font: { weight: 'bold' }, formatter: (v) => v > 0 ? `${v.toLocaleString('fr-FR')} €` : '' } }, scales: { y: { display: false } } }
                     });
                 } catch(err) { console.error(err); }
             }
 
-            // --- MODULE WORKSPACE KANBAN ---
+            // --- MODULE WORKSPACE KANBAN ENGINE ---
             let localColonnes = [];
             let localCartes = [];
             let draggedCardId = null;
@@ -598,13 +556,11 @@
                     if (!cols || cols.length === 0) {
                         await supabase.from('kanban_colonnes').insert([{ id: 1, titre: 'Mes Notes', position: 0 }]);
                     }
-
                     const { data: realCols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
                     const { data: realCards } = await supabase.from('kanban_cartes').select('*').order('position', { ascending: true });
 
                     localColonnes = realCols || [];
                     localCartes = realCards || [];
-
                     renderKanbanDOM();
                 } catch(err) { console.error(err); }
             }
@@ -615,14 +571,13 @@
 
                 localColonnes.forEach(col => {
                     const isFixed = col.id === 1;
-                    const colCards = localCartes.filter(c => c.colonne_id === col.id);
-
                     let cardsHtml = '';
-                    colCards.forEach(card => {
+
+                    localCartes.filter(c => c.colonne_id === col.id).forEach(card => {
                         cardsHtml += `
                             <div class="kanban-card bg-white border border-gray-100 p-3 rounded-lg cursor-grab active:cursor-grabbing text-xs text-gray-800 font-normal hover:border-gray-300 transition-all select-none flex justify-between items-start gap-2 relative group" 
-                                 draggable="true" data-card-id="${card.id}" ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ondblclick="window.openKanbanCardModal(${card.id})">
-                                <span class="flex-1 truncate pr-4">${card.contenu}</span>
+                                 draggable="true" data-card-id="${card.id}" ondragstart="window.handleCardDragStart(event)" ondragend="window.handleCardDragEnd(event)">
+                                <span class="flex-1 truncate pr-4 pointer-events-none">${card.contenu}</span>
                                 <button onclick="event.stopPropagation(); window.deleteKanbanCardDirect(${card.id})" class="delete-btn text-gray-300 hover:text-black transition-colors duration-150 absolute right-2.5 top-3 cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6.14m-4.02 0L10 9m4.665-3.012A5.986 5.986 0 0 0 11.054 3a5.986 5.986 0 0 0-3.612 1.003M3.606 6.315a48.667 48.667 0 0 1 16.788 0M19.23 7.25l-.887 11.898c-.1 1.332-1.121 2.352-2.45 2.352H8.106c-1.328 0-2.35-1.02-2.45-2.352L4.72 7.25M9.88 9.88h4.24" />
@@ -632,37 +587,35 @@
                         `;
                     });
 
-                    const colHtml = `
+                    container.insertAdjacentHTML('beforeend', `
                         <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh]" 
-                             data-col-id="${col.id}" 
-                             draggable="true"
-                             ondragstart="handleColumnDragStart(event)"
-                             ondragend="handleColumnDragEnd(event)"
-                             ondragover="handleColDragOver(event)" 
-                             ondragleave="handleColDragLeave(event)" 
-                             ondrop="handleColDrop(event)">
-                            
+                             data-col-id="${col.id}" draggable="true" ondragstart="window.handleColumnDragStart(event)" ondragend="window.handleColumnDragEnd(event)"
+                             ondragover="window.handleColDragOver(event)" ondragleave="window.handleColDragLeave(event)" ondrop="window.handleColDrop(event)">
                             <div class="flex justify-between items-center mb-4 select-none cursor-move">
-                                ${isFixed ? `
-                                    <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>
-                                ` : `
-                                    <input type="text" value="${col.titre}" onchange="renameKanbanColumn(${col.id}, this.value)" 
-                                           class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text">
-                                `}
+                                ${isFixed ? `<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>` : 
+                                `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text">`}
                             </div>
-                            
                             <div class="space-y-3 overflow-y-auto flex-1 pb-4 min-h-[50px] transition-colors" data-cards-zone="true">
                                 ${cardsHtml}
                             </div>
-
-                            <button onclick="addKanbanCard(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
+                            <button onclick="window.addKanbanCard(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
                         </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', colHtml);
+                    `);
                 });
             }
 
-            // EXPOSITION EXPLICITE DES FONCTIONS AU WINDOW POUR LE DOUBLE CLIC ET ACTIONS DOM
+            // --- DELEGATED EVENT LISTENER GLOBAL POUR LE DOUBLE CLIC DE CARTE ---
+            document.addEventListener('dblclick', (e) => {
+                const cardEl = e.target.closest('.kanban-card');
+                if (cardEl) {
+                    const cardId = cardEl.getAttribute('data-card-id');
+                    if (cardId) {
+                        window.openKanbanCardModal(parseInt(cardId));
+                    }
+                }
+            });
+
+            // DRAG ACTIONS EXPOSÉES
             window.handleColumnDragStart = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
                 draggedColumnId = colEl.getAttribute('data-col-id');
@@ -678,19 +631,38 @@
             window.handleColumnDragEnd = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
                 if (colEl) colEl.classList.remove('opacity-40');
+                hideTrashZone();
+            };
+
+            window.handleCardDragStart = function(e) {
+                const cardEl = e.target.closest('[data-card-id]');
+                draggedCardId = cardEl.getAttribute('data-card-id');
+                cardEl.classList.add('kanban-ghost');
                 
+                // On affiche la corbeille pour la carte également
+                const trashZone = document.getElementById('kanban-column-trash-zone');
+                trashZone.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                trashZone.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            };
+
+            window.handleCardDragEnd = function(e) {
+                const cardEl = e.target.closest('[data-card-id]');
+                if (cardEl) cardEl.classList.remove('kanban-ghost');
+                document.querySelectorAll('[data-cards-zone]').forEach(z => z.classList.remove('bg-gray-50/50'));
+                hideTrashZone();
+            };
+
+            function hideTrashZone() {
                 const trashZone = document.getElementById('kanban-column-trash-zone');
                 trashZone.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 trashZone.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                
                 document.body.classList.remove('trash-active');
                 document.getElementById('trash-icon-svg').classList.remove('text-red-500');
-                draggedColumnId = null;
-            };
+            }
 
             window.handleColumnTrashOver = function(e) {
                 e.preventDefault();
-                if (draggedColumnId && draggedColumnId != 1) {
+                if (draggedCardId || (draggedColumnId && draggedColumnId != 1)) {
                     document.body.classList.add('trash-active');
                     document.getElementById('trash-icon-svg').classList.add('text-red-500');
                 }
@@ -703,56 +675,26 @@
 
             window.handleColumnTrashDrop = async function(e) {
                 e.preventDefault();
-                if (!draggedColumnId || draggedColumnId == 1) return;
-
                 document.body.classList.remove('trash-active');
-                if (confirm("Voulez-vous vraiment supprimer la colonne et tout son contenu ?")) {
-                    await supabase.from('kanban_colonnes').delete().eq('id', draggedColumnId);
-                    fetchAndRenderKanban();
+
+                // Si on drop une CARTE dans la poubelle basse
+                if (draggedCardId) {
+                    if (confirm("Voulez-vous supprimer cette carte ?")) {
+                        await supabase.from('kanban_cartes').delete().eq('id', draggedCardId);
+                        draggedCardId = null;
+                        fetchAndRenderKanban();
+                    }
+                    return;
                 }
-            };
 
-            window.createKanbanColumn = async function() {
-                const titre = prompt("Nom de la nouvelle colonne :");
-                if (!titre || !titre.trim()) return;
-                const nextPos = localColonnes.length;
-
-                await supabase.from('kanban_colonnes').insert([{ titre: titre.trim(), position: nextPos }]);
-                fetchAndRenderKanban();
-            };
-
-            window.renameKanbanColumn = async function(id, val) {
-                if (!val || !val.trim()) return;
-                await supabase.from('kanban_colonnes').update({ titre: val.trim() }).eq('id', id);
-                fetchAndRenderKanban();
-            };
-
-            window.addKanbanCard = async function(colId) {
-                const text = prompt("Titre de la carte :");
-                if (!text || !text.trim()) return;
-
-                const colCards = localCartes.filter(c => c.colonne_id === colId);
-                const nextPos = colCards.length;
-
-                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text.trim(), position: nextPos, notes: '' }]);
-                fetchAndRenderKanban();
-            };
-
-            window.deleteKanbanCardDirect = async function(cardId) {
-                if (!confirm("Voulez-vous vraiment supprimer cette carte ?")) return;
-                await supabase.from('kanban_cartes').delete().eq('id', cardId);
-                fetchAndRenderKanban();
-            };
-
-            window.handleCardDragStart = function(e) {
-                draggedCardId = e.target.getAttribute('data-card-id');
-                e.target.classList.add('kanban-ghost');
-                e.dataTransfer.effectAllowed = 'move';
-            };
-
-            window.handleCardDragEnd = function(e) {
-                e.target.classList.remove('kanban-ghost');
-                document.querySelectorAll('[data-cards-zone]').forEach(z => z.classList.remove('bg-gray-50/50'));
+                // Si on drop une COLONNE dans la poubelle basse
+                if (draggedColumnId && draggedColumnId != 1) {
+                    if (confirm("Voulez-vous détruire la colonne et toutes ses cartes ?")) {
+                        await supabase.from('kanban_colonnes').delete().eq('id', draggedColumnId);
+                        draggedColumnId = null;
+                        fetchAndRenderKanban();
+                    }
+                }
             };
 
             window.handleColDragOver = function(e) {
@@ -775,7 +717,6 @@
                 if (draggedCardId && targetColId) {
                     const targetCard = localCartes.find(c => c.id == draggedCardId);
                     if (targetCard && targetCard.colonne_id != targetColId) {
-                        targetCard.colonne_id = parseInt(targetColId);
                         await supabase.from('kanban_cartes').update({ colonne_id: parseInt(targetColId) }).eq('id', draggedCardId);
                         fetchAndRenderKanban();
                     }
@@ -785,21 +726,43 @@
                 if (draggedColumnId && targetColId && draggedColumnId != targetColId) {
                     const colSource = localColonnes.find(c => c.id == draggedColumnId);
                     const colTarget = localColonnes.find(c => c.id == targetColId);
-                    
                     if (colSource && colTarget) {
                         const oldPos = colSource.position;
-                        colSource.position = colTarget.position;
-                        colTarget.position = oldPos;
-                        
-                        await supabase.from('kanban_colonnes').update({ position: colSource.position }).eq('id', colSource.id);
-                        await supabase.from('kanban_colonnes').update({ position: colTarget.position }).eq('id', colTarget.id);
+                        await supabase.from('kanban_colonnes').update({ position: colTarget.position }).eq('id', colSource.id);
+                        await supabase.from('kanban_colonnes').update({ position: oldPos }).eq('id', colTarget.id);
                         fetchAndRenderKanban();
                     }
                     draggedColumnId = null;
                 }
             };
 
-            // Fix du Double-clic et modale associée rattachés globalement
+            window.createKanbanColumn = async function() {
+                const titre = prompt("Nom de la nouvelle colonne :");
+                if (!titre || !titre.trim()) return;
+                await supabase.from('kanban_colonnes').insert([{ titre: titre.trim(), position: localColonnes.length }]);
+                fetchAndRenderKanban();
+            };
+
+            window.renameKanbanColumn = async function(id, val) {
+                if (!val || !val.trim()) return;
+                await supabase.from('kanban_colonnes').update({ titre: val.trim() }).eq('id', id);
+                fetchAndRenderKanban();
+            };
+
+            window.addKanbanCard = async function(colId) {
+                const text = prompt("Titre de la carte :");
+                if (!text || !text.trim()) return;
+                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text.trim(), position: localCartes.filter(c => c.colonne_id === colId).length, notes: '' }]);
+                fetchAndRenderKanban();
+            };
+
+            window.deleteKanbanCardDirect = async function(cardId) {
+                if (!confirm("Voulez-vous vraiment supprimer cette carte ?")) return;
+                await supabase.from('kanban_cartes').delete().eq('id', cardId);
+                fetchAndRenderKanban();
+            };
+
+            // MODALE DÉTAILS
             const cardModal = document.getElementById('kanban-card-modal');
             const modalCardTitleInput = document.getElementById('modal-card-title-input');
             const modalNotesTextarea = document.getElementById('modal-card-notes-textarea');
@@ -823,12 +786,7 @@
                 const title = modalCardTitleInput.value;
                 const notes = modalNotesTextarea.value;
                 if (!id || !title.trim()) return;
-
-                await supabase.from('kanban_cartes').update({ 
-                    contenu: title.trim(),
-                    notes: notes.trim()
-                }).eq('id', id);
-                
+                await supabase.from('kanban_cartes').update({ contenu: title.trim(), notes: notes.trim() }).eq('id', id);
                 closeKanbanCardModal();
                 fetchAndRenderKanban();
             };
