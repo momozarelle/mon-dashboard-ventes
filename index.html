@@ -3,29 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporting Morgan 2026</title>
+    <title>HUB Morgan 2026</title>
     
+    <!-- FAVICON (Logo dans les favoris et onglets) -->
     <link rel="icon" type="image/png" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     <link rel="apple-touch-icon" href="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png">
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
+        .kanban-ghost {
+            opacity: 0.4;
+            border: 1px dashed #191919;
+        }
     </style>
 </head>
 <body class="bg-white text-[#191919] min-h-screen selection:bg-gray-100">
 
-    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/50">
+    <!-- ========================================== -->
+    <!-- 1. ÉCRAN ACCUEIL : LE HUB PUBLIC           -->
+    <!-- ========================================== -->
+    <div id="screen-hub" class="flex flex-col items-center justify-center min-h-screen px-6 bg-white">
+        <div class="text-center mb-10">
+            <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
+                 alt="Morgan Logo" 
+                 class="w-16 h-16 object-cover rounded-2xl mx-auto border border-gray-100 p-0.5 bg-gray-50/30 mb-4">
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Workspace Morgan</h1>
+            <p class="text-sm text-gray-400 mt-1">Brainsonic AI • Écosystème privé</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-xl">
+            <!-- Bouton vers Reporting -->
+            <button onclick="requestAccess('reporting')" class="group flex flex-col items-start p-6 bg-white border border-gray-100 rounded-xl text-left hover:border-gray-300 transition-all cursor-pointer">
+                <span class="text-xl mb-2">📊</span>
+                <span class="text-base font-medium text-gray-900 group-hover:text-black">Reporting Ventes</span>
+                <span class="text-xs text-gray-400 mt-1">Suivi du chiffre d'affaires, graphiques mensuels et podium clients.</span>
+            </button>
+
+            <!-- Bouton vers Kanban -->
+            <button onclick="requestAccess('kanban')" class="group flex flex-col items-start p-6 bg-white border border-gray-100 rounded-xl text-left hover:border-gray-300 transition-all cursor-pointer">
+                <span class="text-xl mb-2">📋</span>
+                <span class="text-base font-medium text-gray-900 group-hover:text-black">Espace Kanban</span>
+                <span class="text-xs text-gray-400 mt-1">Gestion des tâches, tableau de bord personnel type Trello.</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. ÉCRAN SÉCURISÉ : CONNEXION ÉTANCHÉE     -->
+    <!-- ========================================== -->
+    <div id="screen-auth" class="flex flex-col items-center justify-center min-h-screen px-6 bg-gray-50/50 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-200/80 shadow-xs w-full max-w-sm text-center">
-            <h2 class="text-xl font-medium tracking-tight text-gray-900 mb-6">
-                Reporting Morgan 2026
-            </h2>
+            <div class="mb-4">
+                <span id="auth-app-icon" class="text-3xl">🔑</span>
+            </div>
+            <h2 id="auth-app-title" class="text-xl font-medium tracking-tight text-gray-900 mb-2">Accès Sécurisé</h2>
+            <p class="text-xs text-gray-400 mb-6">Veuillez saisir le mot de passe dédié pour cette application.</p>
             
             <form id="auth-form" class="space-y-4">
                 <div class="relative flex items-center">
@@ -37,30 +80,26 @@
                     Se connecter
                 </button>
                 <p id="auth-error" class="text-xs text-red-500 hidden mt-2">Mot de passe incorrect</p>
+                <button type="button" onclick="navigateBackToHub()" class="text-xs text-gray-400 hover:text-gray-600 block mx-auto mt-4 transition-colors">Retour au HUB</button>
             </form>
         </div>
     </div>
 
-    <div id="screen-dashboard" class="max-w-7xl mx-auto px-6 py-12 hidden">
+    <!-- ========================================== -->
+    <!-- 3. MODULE APPLICATION : REPORTING          -->
+    <!-- ========================================== -->
+    <div id="screen-reporting" class="max-w-7xl mx-auto px-6 py-12 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
             <div class="flex items-center gap-4">
-                <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" 
-                     alt="Morgan Logo" 
-                     class="w-14 h-14 object-cover rounded-xl border border-gray-100 p-0.5 bg-gray-50/30 shrink-0">
+                <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" alt="Logo" class="w-14 h-14 object-cover rounded-xl border border-gray-100 p-0.5 bg-gray-50/30 shrink-0">
                 <div class="flex flex-col justify-between py-0.5">
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 leading-none">
-                        Reporting Morgan 2026
-                    </h1>
-                    <p class="text-sm text-gray-500 mt-1.5 leading-none">
-                        Brainsonic AI
-                    </p>
+                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 leading-none">Reporting Morgan 2026</h1>
+                    <p class="text-sm text-gray-500 mt-1.5 leading-none">Brainsonic AI</p>
                 </div>
             </div>
             <div class="flex items-center gap-4">
-                <button id="btn-logout" class="text-xs text-gray-400 hover:text-gray-900 transition-colors cursor-pointer font-medium">Déconnexion</button>
-                <button id="btn-go-to-form" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">
-                    Push
-                </button>
+                <button onclick="logoutApp('reporting')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer">Quitter l'app</button>
+                <button onclick="openReportingForm()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">Push</button>
             </div>
         </div>
 
@@ -86,31 +125,18 @@
                 <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Évolution Mensuelle du CA (€)</h3>
                 <div class="h-60"><canvas id="monthlyChart"></canvas></div>
             </div>
-            
             <div class="border border-gray-100 p-5 rounded-xl bg-white flex flex-col justify-between">
-                <div>
-                    <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Top 3 Clients (CA Cumulé)</h3>
-                </div>
-                <div class="h-60 relative w-full">
-                    <canvas id="topClientsPodiumChart"></canvas>
-                </div>
-                <div></div>
+                <div><h3 class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">Top 3 Clients (CA Cumulé)</h3></div>
+                <div class="h-60 relative w-full"><canvas id="topClientsPodiumChart"></canvas></div>
             </div>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-100 overflow-hidden mb-12">
             <div class="py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-900">Détail des affaires</h3>
-                </div>
+                <div><h3 class="text-sm font-medium text-gray-900">Détail des affaires</h3></div>
                 <div class="flex items-center gap-2.5 w-full sm:w-auto">
-                    <div class="relative w-full sm:w-64">
-                        <input type="text" id="table-search" placeholder="Rechercher..." 
-                               class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-1.5 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 placeholder-gray-400 transition-all">
-                    </div>
-                    <button id="btn-export-csv" class="border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1">
-                        Export CSV
-                    </button>
+                    <input type="text" id="table-search" placeholder="Rechercher..." class="w-full bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-1.5 text-xs focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400">
+                    <button id="btn-export-csv" class="border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">Export CSV</button>
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -125,66 +151,100 @@
                             <th class="py-3 pl-4 font-medium">Affaire Furious</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-100 text-xs text-gray-700">
-                        </tbody>
+                    <tbody id="table-body" class="divide-y divide-gray-100 text-xs text-gray-700"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="screen-form" class="max-w-xl mx-auto px-6 py-12 hidden">
+    <!-- FORMULAIRE REPORTING -->
+    <div id="screen-reporting-form" class="max-w-xl mx-auto px-6 py-12 hidden">
         <div class="bg-white p-8 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-                <h2 id="form-title" class="text-base font-medium text-gray-900">Nouvelle Entrée</h2>
-                <button id="btn-back-to-dash" class="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">Retour</button>
+                <h2 id="reporting-form-title" class="text-base font-medium text-gray-900">Nouvelle Entrée</h2>
+                <button onclick="closeReportingForm()" class="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Retour</button>
             </div>
-
             <form id="insert-form" class="space-y-5">
                 <input type="hidden" id="form-id">
-
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Date / Période</label>
-                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <input type="text" id="form-date" placeholder="Ex: Janvier 2026" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Nom du Client</label>
-                    <input type="text" id="form-client" placeholder="Ex: BMW" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <input type="text" id="form-client" placeholder="Ex: BMW" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Tarif (€ HT)</label>
-                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <input type="number" id="form-tarif" placeholder="Ex: 12500" required class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Description</label>
-                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all"></textarea>
+                    <textarea id="form-description" placeholder="Détails de la mission..." rows="3" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900"></textarea>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Source d'apport</label>
-                    <select id="form-source" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <select id="form-source" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                         <option value="EBG">EBG</option>
                         <option value="Brainsonic">Brainsonic</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Nom de l'affaire Furious</label>
-                    <input type="text" id="form-furious" placeholder="Ex: EBG-2026-BMW" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-gray-900 transition-all">
+                    <input type="text" id="form-furious" placeholder="Ex: EBG-2026-BMW" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                 </div>
-
                 <div class="flex gap-3 pt-2">
-                    <button type="button" id="btn-delete-form" class="hidden flex-1 border border-red-200 hover:bg-red-50 text-red-600 py-2 px-4 rounded-lg text-xs transition-all cursor-pointer">
-                        Supprimer
-                    </button>
-                    <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs transition-all cursor-pointer">
-                        Enregistrer
-                    </button>
+                    <button type="button" id="btn-delete-form" class="hidden flex-1 border border-red-200 hover:bg-red-50 text-red-600 py-2 px-4 rounded-lg text-xs cursor-pointer">Supprimer</button>
+                    <button type="submit" id="btn-submit-form" class="flex-2 bg-[#191919] hover:bg-black text-white py-2 px-4 rounded-lg text-xs cursor-pointer">Enregistrer</button>
                 </div>
             </form>
             <div id="form-success-container" class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-lg text-center hidden">
-                <p id="form-success" class="text-xs text-gray-600">Enregistré avec succès.</p>
+                <p class="text-xs text-gray-600">Enregistré avec succès.</p>
             </div>
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- 4. MODULE APPLICATION : KANBAN WORKSPACE   -->
+    <!-- ========================================== -->
+    <div id="screen-kanban" class="max-w-7xl mx-auto px-6 py-12 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-gray-200 pb-6 gap-4">
+            <div class="flex items-center gap-4">
+                <img src="https://pwfuuxttjlcpfaojtksl.supabase.co/storage/v1/object/public/Visuels/morgan-pixel.png" alt="Logo" class="w-14 h-14 object-cover rounded-xl border border-gray-100 p-0.5 bg-gray-50/30 shrink-0">
+                <div class="flex flex-col justify-between py-0.5">
+                    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Espace Kanban</h1>
+                    <p class="text-sm text-gray-500 mt-1.5 leading-none">Gestion de projets & Backlog</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="logoutApp('kanban')" class="text-xs text-gray-400 hover:text-gray-900 transition-colors font-medium cursor-pointer">Quitter l'app</button>
+                <button onclick="createKanbanColumn()" class="border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs px-4 py-2 rounded-lg transition-all cursor-pointer">+ Ajouter une colonne</button>
+            </div>
+        </div>
+
+        <!-- Kanban Board Container -->
+        <div id="kanban-board-container" class="flex gap-6 overflow-x-auto pb-6 items-start">
+            <!-- Injecté dynamiquement par JS -->
+        </div>
+    </div>
+
+    <!-- MODALE KANBAN POUR ÉDITION DE CARTE -->
+    <div id="kanban-card-modal" class="fixed inset-0 bg-gray-900/20 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-xl border border-gray-100 w-full max-w-md shadow-xs">
+            <h3 class="text-sm font-medium uppercase tracking-wider text-gray-400 mb-4">Modifier la carte</h3>
+            <input type="hidden" id="modal-card-id">
+            <textarea id="modal-card-textarea" rows="4" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-xs focus:outline-none focus:border-gray-400 text-gray-900 mb-4"></textarea>
+            <div class="flex justify-between gap-3">
+                <button onclick="deleteKanbanCardFromModal()" class="border border-red-200 text-red-600 hover:bg-red-50 text-xs px-3 py-2 rounded-lg cursor-pointer">Supprimer</button>
+                <div class="flex gap-2">
+                    <button onclick="closeKanbanCardModal()" class="border border-gray-200 text-gray-500 text-xs px-3 py-2 rounded-lg cursor-pointer">Annuler</button>
+                    <button onclick="saveKanbanCardFromModal()" class="bg-[#191919] hover:bg-black text-white text-xs px-4 py-2 rounded-lg cursor-pointer">Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIQUE LOGICIELLE LOGÉE UNIQUE -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -196,31 +256,68 @@
             let chartInstance = null;
             let podiumChartInstance = null;
             let globalVentes = [];
+            let currentAuthContext = null; // 'reporting' ou 'kanban'
 
             const monthsOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-            const screenAuth = document.getElementById('screen-auth');
-            const screenDashboard = document.getElementById('screen-dashboard');
-            const screenForm = document.getElementById('screen-form');
+            // Écrans DOM
+            const scrHub = document.getElementById('screen-hub');
+            const scrAuth = document.getElementById('screen-auth');
+            const scrReporting = document.getElementById('screen-reporting');
+            const scrReportingForm = document.getElementById('screen-reporting-form');
+            const scrKanban = document.getElementById('screen-kanban');
+
             const passwordInput = document.getElementById('auth-password');
             const togglePwdBtn = document.getElementById('btn-toggle-pwd');
             const authForm = document.getElementById('auth-form');
             const authError = document.getElementById('auth-error');
             const searchInput = document.getElementById('table-search');
-            const btnExportCsv = document.getElementById('btn-export-csv');
 
-            function showScreen(screenId) {
-                screenAuth.classList.add('hidden');
-                screenDashboard.classList.add('hidden');
-                screenForm.classList.add('hidden');
-                document.getElementById(screenId).classList.remove('hidden');
+            // --- NAVIGATION ROUTING SPA ---
+            window.requestAccess = function(app) {
+                currentAuthContext = app;
+                const sessionKey = app === 'reporting' ? 'auth_reporting_active' : 'auth_kanban_active';
+                
+                if (localStorage.getItem(sessionKey) === 'true') {
+                    openApp(app);
+                } else {
+                    passwordInput.value = '';
+                    authError.classList.add('hidden');
+                    document.getElementById('auth-app-title').innerText = app === 'reporting' ? 'Accès Reporting Ventes' : 'Accès Espace Kanban';
+                    document.getElementById('auth-app-icon').innerText = app === 'reporting' ? '📊' : '📋';
+                    scrHub.classList.add('hidden');
+                    scrAuth.classList.remove('hidden');
+                }
+            };
+
+            window.navigateBackToHub = function() {
+                scrAuth.classList.add('hidden');
+                scrReporting.classList.add('hidden');
+                scrReportingForm.classList.add('hidden');
+                scrKanban.classList.add('hidden');
+                scrHub.classList.remove('hidden');
+                currentAuthContext = null;
+            };
+
+            function openApp(app) {
+                scrHub.classList.add('hidden');
+                scrAuth.classList.add('hidden');
+                if (app === 'reporting') {
+                    scrReporting.classList.remove('hidden');
+                    fetchAndRenderDashboard();
+                } else if (app === 'kanban') {
+                    scrKanban.classList.remove('hidden');
+                    fetchAndRenderKanban();
+                }
             }
 
-            if (localStorage.getItem('morgan_authenticated') === 'true') {
-                showScreen('screen-dashboard');
-                fetchAndRenderDashboard();
-            }
+            window.logoutApp = function(app) {
+                const sessionKey = app === 'reporting' ? 'auth_reporting_active' : 'auth_kanban_active';
+                localStorage.removeItem(sessionKey);
+                navigateBackToHub();
+            };
 
+            // Toggle Affichage Mot de Passe
             togglePwdBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (passwordInput.type === 'password') {
@@ -232,66 +329,44 @@
                 }
             });
 
-            authForm.addEventListener('submit', (event) => {
-                event.preventDefault();
+            // Soumission Authentification Compartimentée
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
                 if (passwordInput.value.trim() === '1234') {
                     authError.classList.add('hidden');
-                    localStorage.setItem('morgan_authenticated', 'true');
-                    showScreen('screen-dashboard');
-                    fetchAndRenderDashboard();
+                    const sessionKey = currentAuthContext === 'reporting' ? 'auth_reporting_active' : 'auth_kanban_active';
+                    localStorage.setItem(sessionKey, 'true');
+                    openApp(currentAuthContext);
                 } else {
                     authError.classList.remove('hidden');
                 }
             });
 
-            document.getElementById('btn-logout').addEventListener('click', () => {
-                localStorage.removeItem('morgan_authenticated');
-                passwordInput.value = '';
-                showScreen('screen-auth');
-            });
-
-            searchInput.addEventListener('input', () => {
-                const query = searchInput.value.toLowerCase().trim();
-                if (!query) {
-                    renderTableRows(globalVentes);
-                    return;
-                }
-                const filtered = globalVentes.filter(v => {
-                    return (v.client && v.client.toLowerCase().includes(query)) ||
-                           (v.furious && v.furious.toLowerCase().includes(query)) ||
-                           (v.description && v.description.toLowerCase().includes(query)) ||
-                           (v.source && v.source.toLowerCase().includes(query)) ||
-                           (v.date && String(v.date).toLowerCase().includes(query));
-                });
-                renderTableRows(filtered);
-            });
-
-            btnExportCsv.addEventListener('click', () => {
-                exportToCsv(globalVentes);
-            });
-
-            document.getElementById('btn-go-to-form').addEventListener('click', () => {
+            // --- CODE MODULE : REPORTING & AFFAIRES ---
+            window.openReportingForm = function() {
                 document.getElementById('form-id').value = '';
-                document.getElementById('form-title').innerText = "Nouvelle Entrée";
+                document.getElementById('reporting-form-title').innerText = "Nouvelle Entrée";
                 document.getElementById('btn-submit-form').innerText = "Enregistrer";
                 document.getElementById('btn-delete-form').classList.add('hidden');
                 document.getElementById('insert-form').reset();
                 document.getElementById('form-date').value = "Janvier 2026";
                 document.getElementById('form-success-container').classList.add('hidden');
-                showScreen('screen-form');
-            });
+                scrReporting.classList.add('hidden');
+                scrReportingForm.classList.remove('hidden');
+            };
 
-            document.getElementById('btn-back-to-dash').addEventListener('click', () => {
-                showScreen('screen-dashboard');
+            window.closeReportingForm = function() {
+                scrReportingForm.classList.add('hidden');
+                scrReporting.classList.remove('hidden');
                 fetchAndRenderDashboard();
-            });
+            };
 
             window.openEditMode = function(id) {
                 const currentItem = globalVentes.find(v => v.id === id);
                 if (!currentItem) return;
 
                 document.getElementById('form-id').value = currentItem.id;
-                document.getElementById('form-title').innerText = "Modifier l'entrée";
+                document.getElementById('reporting-form-title').innerText = "Modifier l'entrée";
                 document.getElementById('btn-submit-form').innerText = "Mettre à jour";
                 document.getElementById('btn-delete-form').classList.remove('hidden');
                 
@@ -303,7 +378,8 @@
                 document.getElementById('form-source').value = currentItem.source || 'Brainsonic';
 
                 document.getElementById('form-success-container').classList.add('hidden');
-                showScreen('screen-form');
+                scrReporting.classList.add('hidden');
+                scrReportingForm.classList.remove('hidden');
             };
 
             document.getElementById('btn-delete-form').addEventListener('click', async () => {
@@ -312,234 +388,8 @@
                 if (!confirm("Supprimer définitivement cette ligne ?")) return;
 
                 const { error } = await supabase.from('ventes').delete().eq('id', id);
-                if (!error) {
-                    showScreen('screen-dashboard');
-                    fetchAndRenderDashboard();
-                } else {
-                    alert("Erreur : " + error.message);
-                }
+                if (!error) closeReportingForm();
             });
-
-            function sortChronologically(list) {
-                return [...list].sort((a, b) => {
-                    const dateA = String(a.date || '');
-                    const dateB = String(b.date || '');
-
-                    let monthIndexA = -1;
-                    let monthIndexB = -1;
-                    
-                    monthsOrder.forEach((m, idx) => {
-                        if (dateA.toLowerCase().includes(m.toLowerCase())) monthIndexA = idx;
-                        if (dateB.toLowerCase().includes(m.toLowerCase())) monthIndexB = idx;
-                    });
-
-                    const yearA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
-                    const yearB = parseInt(dateB.match(/\d{4}/)?.[0] || '2026');
-
-                    if (yearA !== yearB) return yearB - yearA; 
-                    if (monthIndexA !== monthIndexB) return monthIndexB - monthIndexA; 
-                    return b.id - a.id; 
-                });
-            }
-
-            function renderTableRows(list) {
-                const tbody = document.getElementById('table-body');
-                tbody.innerHTML = '';
-                
-                const sortedList = sortChronologically(list);
-                
-                if (sortedList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Aucune affaire</td></tr>';
-                    return;
-                }
-                
-                sortedList.forEach(v => {
-                    tbody.insertAdjacentHTML('beforeend', `
-                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/60 transition-colors border-b border-gray-100 cursor-pointer">
-                            <td class="py-3.5 pr-4 text-gray-400 font-mono whitespace-nowrap">${v.date || '-'}</td>
-                            <td class="py-3.5 px-4 font-medium text-gray-900">${v.client || ''}</td>
-                            <td class="py-3.5 px-4 text-right font-mono font-medium text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
-                            <td class="py-3.5 px-4 text-gray-500 max-w-xs truncate">${v.description || ''}</td>
-                            <td class="py-3.5 px-4 text-xs font-semibold text-gray-800">${v.source || ''}</td>
-                            <td class="py-3.5 pl-4 text-gray-400 font-mono">${v.furious || ''}</td>
-                        </tr>
-                    `);
-                });
-            }
-
-            function exportToCsv(list) {
-                if (list.length === 0) return;
-                const sortedList = sortChronologically(list);
-                let csvContent = "Date;Client;Tarif (EUR);Description;Source;Affaire Furious\r\n";
-                sortedList.forEach(v => {
-                    const date = (v.date || '').replace(/;/g, ',');
-                    const client = (v.client || '').replace(/;/g, ',');
-                    const montant = v.montant || 0;
-                    const desc = (v.description || '').replace(/[\r\n]+/g, ' ').replace(/;/g, ',');
-                    const source = (v.source || '').replace(/;/g, ',');
-                    const furious = (v.furious || '').replace(/;/g, ',');
-                    csvContent += `"${date}";"${client}";${montant};"${desc}";"${source}";"${furious}"\r\n`;
-                });
-                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", "export_affaires_2026.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-
-            async function fetchAndRenderDashboard() {
-                try {
-                    const { data: ventes, error } = await supabase.from('ventes').select('*');
-                    if (error || !ventes || ventes.length === 0) return;
-
-                    globalVentes = ventes;
-                    let totalCA = 0, totalEBG = 0, totalDirect = 0;
-                    const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
-                    const clientAggregation = {};
-
-                    ventes.forEach(v => {
-                        const valMontant = parseFloat(v.montant || 0);
-                        totalCA += valMontant;
-                        if (String(v.source).trim().toUpperCase() === 'EBG') totalEBG += valMontant;
-                        if (String(v.source).trim().toUpperCase() === 'BRAINSONIC' || String(v.source).trim().toUpperCase() === 'DIRECT') totalDirect += valMontant;
-
-                        let monthFound = null;
-                        for (let m of Object.keys(monthlyData)) {
-                            if (String(v.date).toLowerCase().includes(m.toLowerCase())) {
-                                monthFound = m;
-                                break;
-                            }
-                        }
-                        if (monthFound) monthlyData[monthFound] += valMontant;
-                    });
-
-                    document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} €`;
-                    document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} €`;
-                    document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} €`;
-                    document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
-                    document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
-
-                    ventes.forEach(v => {
-                        if (v.client) {
-                            let cleanClient = v.client.trim();
-                            if (cleanClient) clientAggregation[cleanClient] = (clientAggregation[cleanClient] || 0) + parseFloat(v.montant || 0);
-                        }
-                    });
-
-                    const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
-                    let podiumLabels = ['-', '-', '-'], podiumData = [0, 0, 0];
-                    if (topClientsSorted[0]) { podiumLabels[1] = topClientsSorted[0][0]; podiumData[1] = topClientsSorted[0][1]; }
-                    if (topClientsSorted[1]) { podiumLabels[0] = topClientsSorted[1][0]; podiumData[0] = topClientsSorted[1][1]; }
-                    if (topClientsSorted[2]) { podiumLabels[2] = topClientsSorted[2][0]; podiumData[2] = topClientsSorted[2][1]; }
-
-                    renderTableRows(globalVentes);
-
-                    // Chart Évolution
-                    if (chartInstance) chartInstance.destroy();
-                    chartInstance = new Chart(document.getElementById('monthlyChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: monthsOrder, 
-                            datasets: [{
-                                data: monthsOrder.map(m => monthlyData[m]),
-                                backgroundColor: '#191919', 
-                                hoverBackgroundColor: '#000000',
-                                borderRadius: 2
-                            }]
-                        },
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false, 
-                            plugins: { 
-                                legend: { display: false },
-                                tooltip: { 
-                                    enabled: true, 
-                                    backgroundColor: '#191919', 
-                                    padding: 10, 
-                                    borderRadius: 6,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
-                                        }
-                                    }
-                                },
-                                datalabels: { display: false } 
-                            },
-                            scales: {
-                                y: { 
-                                    grid: { color: 'rgba(0, 0, 0, 0.03)' }, 
-                                    ticks: { 
-                                        color: '#9CA3AF',
-                                        callback: function(value) { return value.toLocaleString('fr-FR') + ' €'; }
-                                    } 
-                                },
-                                x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
-                            }
-                        }
-                    });
-
-                    // Chart Podium Monochrome Noir
-                    if (podiumChartInstance) podiumChartInstance.destroy();
-
-                    podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: podiumLabels,
-                            datasets: [{
-                                label: 'CA Cumulé',
-                                data: podiumData,
-                                backgroundColor: ['#191919', '#191919', '#191919'], 
-                                borderColor: ['#191919', '#191919', '#191919'],
-                                borderWidth: 1,
-                                borderRadius: 6,
-                                barPercentage: 0.65
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: { padding: { top: 25 } }, 
-                            plugins: { 
-                                legend: { display: false },
-                                tooltip: { 
-                                    enabled: true,
-                                    backgroundColor: '#191919',
-                                    titleFont: { size: 12 },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                    borderRadius: 8,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` ${context.parsed.y.toLocaleString('fr-FR')} €`;
-                                        }
-                                    }
-                                },
-                                datalabels: {
-                                    display: true,
-                                    align: 'top',
-                                    anchor: 'end',
-                                    offset: 4,
-                                    color: '#111827',
-                                    font: {
-                                        weight: 'bold',
-                                        family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                                        size: 11
-                                    },
-                                    formatter: function(value) { return value > 0 ? `${value.toLocaleString('fr-FR')} €` : ''; }
-                                }
-                            },
-                            scales: {
-                                y: { display: false },
-                                x: { grid: { display: false }, ticks: { color: '#191919', font: { size: 11 } } }
-                            }
-                        }
-                    });
-
-                } catch (err) { console.error(err); }
-            }
 
             document.getElementById('insert-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -553,25 +403,333 @@
                     source: document.getElementById('form-source').value
                 };
 
-                let resultError = null;
+                let resError = null;
                 if (targetId) {
                     const { error } = await supabase.from('ventes').update(payload).eq('id', targetId);
-                    resultError = error;
+                    resError = error;
                 } else {
                     const { error } = await supabase.from('ventes').insert([payload]);
-                    resultError = error;
+                    resError = error;
                 }
 
-                if (!resultError) {
+                if (!resError) {
                     document.getElementById('form-success-container').classList.remove('hidden');
-                    setTimeout(() => {
-                        showScreen('screen-dashboard');
-                        fetchAndRenderDashboard();
-                    }, 1000);
-                } else {
-                    alert("Erreur : " + resultError.message);
+                    setTimeout(() => closeReportingForm(), 1000);
                 }
             });
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase().trim();
+                if (!query) { renderTableRows(globalVentes); return; }
+                const filtered = globalVentes.filter(v => {
+                    return (v.client && v.client.toLowerCase().includes(query)) ||
+                           (v.furious && v.furious.toLowerCase().includes(query)) ||
+                           (v.description && v.description.toLowerCase().includes(query)) ||
+                           (v.source && v.source.toLowerCase().includes(query)) ||
+                           (v.date && String(v.date).toLowerCase().includes(query));
+                });
+                renderTableRows(filtered);
+            });
+
+            document.getElementById('btn-export-csv').addEventListener('click', () => {
+                if (globalVentes.length === 0) return;
+                const sorted = sortChronologically(globalVentes);
+                let csvContent = "Date;Client;Tarif (EUR);Description;Source;Affaire Furious\r\n";
+                sorted.forEach(v => {
+                    csvContent += `"${(v.date || '')}";"${(v.client || '')}";${v.montant || 0};"${(v.description || '').replace(/[\r\n]+/g, ' ')}";"${v.source || ''}";"${v.furious || ''}"\r\n`;
+                });
+                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.setAttribute("href", URL.createObjectURL(blob));
+                link.setAttribute("download", "export_affaires_2026.csv");
+                link.click();
+            });
+
+            function sortChronologically(list) {
+                return [...list].sort((a, b) => {
+                    const dateA = String(a.date || ''); const dateB = String(b.date || '');
+                    let idxA = -1; let idxB = -1;
+                    monthsOrder.forEach((m, idx) => {
+                        if (dateA.toLowerCase().includes(m.toLowerCase())) idxA = idx;
+                        if (dateB.toLowerCase().includes(m.toLowerCase())) idxB = idx;
+                    });
+                    const yA = parseInt(dateA.match(/\d{4}/)?.[0] || '2026');
+                    const yB = parseInt(dateB.match(/\d{4}/)?.[0] || '2026');
+                    if (yA !== yB) return yB - yA;
+                    if (idxA !== idxB) return idxB - idxA;
+                    return b.id - a.id;
+                });
+            }
+
+            function renderTableRows(list) {
+                const tbody = document.getElementById('table-body');
+                tbody.innerHTML = '';
+                const sorted = sortChronologically(list);
+                if (sorted.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Aucune affaire</td></tr>';
+                    return;
+                }
+                sorted.forEach(v => {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/60 transition-colors border-b border-gray-100 cursor-pointer">
+                            <td class="py-3.5 pr-4 text-gray-400 font-mono whitespace-nowrap">${v.date || '-'}</td>
+                            <td class="py-3.5 px-4 font-medium text-gray-900">${v.client || ''}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-medium text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
+                            <td class="py-3.5 px-4 text-gray-500 max-w-xs truncate">${v.description || ''}</td>
+                            <td class="py-3.5 px-4 text-xs font-semibold text-gray-800">${v.source || ''}</td>
+                            <td class="py-3.5 pl-4 text-gray-400 font-mono">${v.furious || ''}</td>
+                        </tr>
+                    `);
+                });
+            }
+
+            async function fetchAndRenderDashboard() {
+                try {
+                    const { data: ventes, error } = await supabase.from('ventes').select('*');
+                    if (error || !ventes || ventes.length === 0) return;
+
+                    globalVentes = ventes;
+                    let totalCA = 0, totalEBG = 0, totalDirect = 0;
+                    const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
+                    const clientAggregation = {};
+
+                    ventes.forEach(v => {
+                        const val = parseFloat(v.montant || 0); totalCA += val;
+                        if (String(v.source).trim().toUpperCase() === 'EBG') totalEBG += val;
+                        if (String(v.source).trim().toUpperCase() === 'BRAINSONIC' || String(v.source).trim().toUpperCase() === 'DIRECT') totalDirect += val;
+                        let mFound = null;
+                        for (let m of Object.keys(monthlyData)) {
+                            if (String(v.date).toLowerCase().includes(m.toLowerCase())) { mFound = m; break; }
+                        }
+                        if (mFound) monthlyData[mFound] += val;
+                    });
+
+                    document.getElementById('kpi-total').innerText = `${totalCA.toLocaleString('fr-FR')} €`;
+                    document.getElementById('kpi-ebg').innerText = `${totalEBG.toLocaleString('fr-FR')} €`;
+                    document.getElementById('kpi-direct').innerText = `${totalDirect.toLocaleString('fr-FR')} €`;
+                    document.getElementById('pct-ebg').innerText = totalCA > 0 ? `${((totalEBG/totalCA)*100).toFixed(1)}% du total` : '0% du total';
+                    document.getElementById('pct-direct').innerText = totalCA > 0 ? `${((totalDirect/totalCA)*100).toFixed(1)}% du total` : '0% du total';
+
+                    ventes.forEach(v => {
+                        if (v.client) {
+                            let cl = v.client.trim();
+                            if (cl) clientAggregation[cl] = (clientAggregation[cl] || 0) + parseFloat(v.montant || 0);
+                        }
+                    });
+
+                    const topClientsSorted = Object.entries(clientAggregation).sort((a, b) => b[1] - a[1]).slice(0, 3);
+                    let podiumLabels = ['-', '-', '-'], podiumData = [0, 0, 0];
+                    if (topClientsSorted[0]) { podiumLabels[1] = topClientsSorted[0][0]; podiumData[1] = topClientsSorted[0][1]; }
+                    if (topClientsSorted[1]) { podiumLabels[0] = topClientsSorted[1][0]; podiumData[0] = topClientsSorted[1][1]; }
+                    if (topClientsSorted[2]) { podiumLabels[2] = topClientsSorted[2][0]; podiumData[2] = topClientsSorted[2][1]; }
+
+                    renderTableRows(globalVentes);
+
+                    // Charts Rendu Isolé Réfléchi
+                    if (chartInstance) chartInstance.destroy();
+                    chartInstance = new Chart(document.getElementById('monthlyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: monthsOrder,
+                            datasets: [{ data: monthsOrder.map(m => monthlyData[m]), backgroundColor: '#191919', hoverBackgroundColor: '#000000', borderRadius: 2 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#191919', callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } }, datalabels: { display: false } },
+                            scales: { y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { callback: (v) => v.toLocaleString('fr-FR') + ' €' } }, x: { grid: { display: false } } }
+                        }
+                    });
+
+                    if (podiumChartInstance) podiumChartInstance.destroy();
+                    podiumChartInstance = new Chart(document.getElementById('topClientsPodiumChart'), {
+                        type: 'bar',
+                        data: { labels: podiumLabels, datasets: [{ data: podiumData, backgroundColor: ['#191919', '#191919', '#191919'], borderRadius: 6, barPercentage: 0.65 }] },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
+                            plugins: {
+                                legend: { display: false }, tooltip: { backgroundColor: '#191919', callbacks: { label: (c) => ` ${c.parsed.y.toLocaleString('fr-FR')} €` } },
+                                datalabels: { display: true, align: 'top', anchor: 'end', color: '#111827', font: { weight: 'bold', size: 11 }, formatter: (v) => v > 0 ? `${v.toLocaleString('fr-FR')} €` : '' }
+                            },
+                            scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#191919', font: { size: 11 } } } }
+                        }
+                    });
+                } catch(err) { console.error(err); }
+            }
+
+            // --- CODE MODULE : KANBAN ENGINE (DRAG & DROP HTML5) ---
+            let localColonnes = [];
+            let localCartes = [];
+            let draggedCardId = null;
+
+            async function fetchAndRenderKanban() {
+                try {
+                    // Initialisation : On s'assure qu'au moins la colonne "Mes Notes" existe
+                    const { data: cols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
+                    
+                    if (!cols || cols.length === 0) {
+                        await supabase.from('kanban_colonnes').insert([{ id: 1, titre: 'Mes Notes', position: 0 }]);
+                    }
+
+                    const { data: realCols } = await supabase.from('kanban_colonnes').select('*').order('position', { ascending: true });
+                    const { data: realCards } = await supabase.from('kanban_cartes').select('*').order('position', { ascending: true });
+
+                    localColonnes = realCols || [];
+                    localCartes = realCards || [];
+
+                    renderKanbanDOM();
+                } catch(err) { console.error(err); }
+            }
+
+            function renderKanbanDOM() {
+                const container = document.getElementById('kanban-board-container');
+                container.innerHTML = '';
+
+                localColonnes.forEach(col => {
+                    const isFixed = col.id === 1;
+                    const colCards = localCartes.filter(c => c.colonne_id === col.id);
+
+                    let cardsHtml = '';
+                    colCards.forEach(card => {
+                        cardsHtml += `
+                            <div class="bg-white border border-gray-100 p-3 rounded-lg cursor-grab active:cursor-grabbing text-xs text-gray-800 font-normal hover:border-gray-300 transition-all select-none" 
+                                 draggable="true" data-card-id="${card.id}" ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ondoubleclick="openKanbanCardModal(${card.id})">
+                                ${card.contenu}
+                            </div>
+                        `;
+                    });
+
+                    const colHtml = `
+                        <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh]" 
+                             data-col-id="${col.id}" ondragover="handleColDragOver(event)" ondragleave="handleColDragLeave(event)" ondrop="handleColDrop(event)">
+                            <div class="flex justify-between items-center mb-4 select-none">
+                                ${isFixed ? `
+                                    <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>
+                                ` : `
+                                    <input type="text" value="${col.titre}" onchange="renameKanbanColumn(${col.id}, this.value)" 
+                                           class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2">
+                                    <button onclick="deleteKanbanColumn(${col.id})" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer">✕</button>
+                                `}
+                            </div>
+                            
+                            <!-- Espace cartes déroulable -->
+                            <div class="space-y-3 overflow-y-auto flex-1 pb-4 min-h-[50px] transition-colors" data-cards-zone="true">
+                                ${cardsHtml}
+                            </div>
+
+                            <button onclick="addKanbanCard(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', colHtml);
+                });
+            }
+
+            window.createKanbanColumn = async function() {
+                const titre = prompt("Nom de la nouvelle colonne :");
+                if (!titre || !titre.trim()) return;
+                const nextPos = localColonnes.length;
+
+                await supabase.from('kanban_colonnes').insert([{ titre: titre.trim(), position: nextPos }]);
+                fetchAndRenderKanban();
+            };
+
+            window.renameKanbanColumn = async function(id, val) {
+                if (!val || !val.trim()) return;
+                await supabase.from('kanban_colonnes').update({ titre: val.trim() }).eq('id', id);
+                fetchAndRenderKanban();
+            };
+
+            window.deleteKanbanColumn = async function(id) {
+                if (id === 1) return;
+                if (!confirm("Supprimer cette colonne et toutes ses cartes ?")) return;
+                await supabase.from('kanban_colonnes').delete().eq('id', id);
+                fetchAndRenderKanban();
+            };
+
+            window.addKanbanCard = async function(colId) {
+                const text = prompt("Contenu de la carte :");
+                if (!text || !text.trim()) return;
+
+                const colCards = localCartes.filter(c => c.colonne_id === colId);
+                const nextPos = colCards.length;
+
+                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text.trim(), position: nextPos }]);
+                fetchAndRenderKanban();
+            };
+
+            // Drag & Drop Handling Natif
+            window.handleCardDragStart = function(e) {
+                draggedCardId = e.target.getAttribute('data-card-id');
+                e.target.classList.add('kanban-ghost');
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            window.handleCardDragEnd = function(e) {
+                e.target.classList.remove('kanban-ghost');
+                document.querySelectorAll('[data-cards-zone]').forEach(z => z.classList.remove('bg-gray-50/50'));
+            };
+
+            window.handleColDragOver = function(e) {
+                e.preventDefault();
+                const zone = e.currentTarget.querySelector('[data-cards-zone]');
+                if (zone) zone.classList.add('bg-gray-50/50');
+            };
+
+            window.handleColDragLeave = function(e) {
+                const zone = e.currentTarget.querySelector('[data-cards-zone]');
+                if (zone) zone.classList.remove('bg-gray-50/50');
+            };
+
+            window.handleColDrop = async function(e) {
+                e.preventDefault();
+                const colId = e.currentTarget.getAttribute('data-col-id');
+                if (!draggedCardId || !colId) return;
+
+                // Update locale immédiate pour fluidité visuelle (Vibe)
+                const targetCard = localCartes.find(c => c.id == draggedCardId);
+                if (targetCard && targetCard.colonne_id != colId) {
+                    targetCard.colonne_id = parseInt(colId);
+                    
+                    // Mutation asynchrone Supabase
+                    await supabase.from('kanban_cartes').update({ colonne_id: parseInt(colId) }).eq('id', draggedCardId);
+                    fetchAndRenderKanban();
+                }
+                draggedCardId = null;
+            };
+
+            // Modale d'Édition
+            const cardModal = document.getElementById('kanban-card-modal');
+            const modalTextarea = document.getElementById('modal-card-textarea');
+            const modalHiddenId = document.getElementById('modal-card-id');
+
+            window.openKanbanCardModal = function(cardId) {
+                const card = localCartes.find(c => c.id == cardId);
+                if (!card) return;
+                modalHiddenId.value = card.id;
+                modalTextarea.value = card.contenu;
+                cardModal.classList.remove('hidden');
+            };
+
+            window.closeKanbanCardModal = function() {
+                cardModal.classList.add('hidden');
+            };
+
+            window.saveKanbanCardFromModal = async function() {
+                const id = modalHiddenId.value;
+                const txt = modalTextarea.value;
+                if (!id || !txt.trim()) return;
+
+                await supabase.from('kanban_cartes').update({ contenu: txt.trim() }).eq('id', id);
+                closeKanbanCardModal();
+                fetchAndRenderKanban();
+            };
+
+            window.deleteKanbanCardFromModal = async function() {
+                const id = modalHiddenId.value;
+                if (!id) return;
+                await supabase.from('kanban_cartes').delete().eq('id', id);
+                closeKanbanCardModal();
+                fetchAndRenderKanban();
+            };
         });
     </script>
 </body>
