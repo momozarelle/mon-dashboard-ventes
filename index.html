@@ -61,15 +61,14 @@
                  alt="Brainsonic AI" 
                  class="h-18 object-contain mx-auto opacity-95 mt-2">
                  
-            <h1 class="text-2xl tracking-widest text-gray-400 font-light mt-4">Workspace Morgan 2026</h1>
+            <!-- Titre Workspace Morgan 2026 maintenant en noir pur -->
+            <h1 class="text-2xl tracking-widest text-gray-900 font-medium mt-4">Workspace Morgan 2026</h1>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-            <!-- Bouton vers Reporting (Texte grisé par défaut, noir au survol) -->
             <button onclick="requestAccess('reporting')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-400 hover:text-black hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Reporting
             </button>
-            <!-- Bouton vers Gestion des tâches (Texte grisé par défaut, noir au survol) -->
             <button onclick="requestAccess('kanban')" class="group flex items-center justify-center py-4 px-6 bg-white border border-gray-200/80 rounded-xl text-center font-medium text-sm text-gray-400 hover:text-black hover:border-black/40 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer">
                 Gestion des tâches
             </button>
@@ -389,7 +388,7 @@
                 }
             });
 
-            // --- REPORTING ACTIONS ---
+            // --- MODULE REPORTING ACTIONS (BLINDÉ) ---
             window.openReportingForm = function() {
                 document.getElementById('form-id').value = '';
                 document.getElementById('reporting-form-title').innerText = "Nouvelle Entrée";
@@ -478,23 +477,43 @@
                 link.click();
             });
 
+            // CORRECTION STRUCTURELLE DU TRI SANS CRASH CHRONOLOGIQUE
+            function sortChronologically(list) {
+                return [...list].sort((a, b) => {
+                    const dateA = String(a.date || ''); 
+                    const dateB = String(b.date || '');
+                    let idxA = 0; let idxB = 0;
+                    monthsOrder.forEach((m, idx) => {
+                        if (dateA.toLowerCase().includes(m.toLowerCase())) idxA = idx;
+                        if (dateB.toLowerCase().includes(m.toLowerCase())) idxB = idx;
+                    });
+                    const matchA = dateA.match(/\d{4}/);
+                    const matchB = dateB.match(/\d{4}/);
+                    const yA = matchA ? parseInt(matchA[0]) : 2026;
+                    const yB = matchB ? parseInt(matchB[0]) : 2026;
+                    if (yA !== yB) return yB - yA;
+                    if (idxA !== idxB) return idxB - idxA;
+                    return (b.id || 0) - (a.id || 0);
+                });
+            }
+
             function renderTableRows(list) {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
                 const sorted = sortChronologically(list);
                 if (sorted.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Aucune affaire</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Aucune affaire trouvée</td></tr>';
                     return;
                 }
                 sorted.forEach(v => {
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr onclick="openEditMode(${v.id})" class="hover:bg-gray-50/60 transition-colors border-b border-gray-100 cursor-pointer">
-                            <td class="py-3.5 pr-4 text-gray-400 font-mono whitespace-nowrap">${v.date || '-'}</td>
+                            <td class="py-3.5 pr-4 text-gray-400 font-mono whitespace-nowrap px-4">${v.date || '-'}</td>
                             <td class="py-3.5 px-4 font-medium text-gray-900">${v.client || ''}</td>
                             <td class="py-3.5 px-4 text-right font-mono font-medium text-gray-900 whitespace-nowrap">${parseFloat(v.montant || 0).toLocaleString('fr-FR')} €</td>
                             <td class="py-3.5 px-4 text-gray-500 max-w-xs truncate">${v.description || ''}</td>
                             <td class="py-3.5 px-4 text-xs font-semibold text-gray-800">${v.source || ''}</td>
-                            <td class="py-3.5 pl-4 text-gray-400 font-mono">${v.furious || ''}</td>
+                            <td class="py-3.5 px-4 text-gray-400 font-mono">${v.furious || ''}</td>
                         </tr>
                     `);
                 });
@@ -503,8 +522,9 @@
             async function fetchAndRenderDashboard() {
                 try {
                     const { data: ventes, error } = await supabase.from('ventes').select('*');
-                    if (error || !ventes || ventes.length === 0) return;
+                    if (error || !ventes) return;
                     globalVentes = ventes;
+                    
                     let totalCA = 0, totalEBG = 0, totalDirect = 0;
                     const monthlyData = { 'Janvier': 0, 'Février': 0, 'Mars': 0, 'Avril': 0, 'Mai': 0, 'Juin': 0, 'Juillet': 0, 'Août': 0, 'Septembre': 0, 'Octobre': 0, 'Novembre': 0, 'Décembre': 0 };
                     const clientAggregation = {};
@@ -554,7 +574,7 @@
                 } catch(err) { console.error(err); }
             }
 
-            // --- MODULE WORKSPACE KANBAN ENGINE INLINE ---
+            // --- MODULE WORKSPACE KANBAN ---
             let localColonnes = [];
             let localCartes = [];
             let draggedCardId = null;
@@ -597,7 +617,6 @@
                         `;
                     });
 
-                    // Ajout d'effet de survol (hover) sur la colonne entière, texte d'en-tête reste en noir
                     container.insertAdjacentHTML('beforeend', `
                         <div class="w-72 border border-gray-100 rounded-xl bg-white p-4 shrink-0 flex flex-col max-h-[75vh] hover:border-gray-300 hover:bg-gray-50/20 transition-all duration-200" 
                              data-col-id="${col.id}" draggable="true" ondragstart="window.handleColumnDragStart(event)" ondragend="window.handleColumnDragEnd(event)"
@@ -606,18 +625,15 @@
                                 ${isFixed ? `<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-900 py-1">${col.titre}</h2>` : 
                                 `<input type="text" value="${col.titre}" onchange="window.renameKanbanColumn(${col.id}, this.value)" class="text-xs font-semibold uppercase tracking-wider text-gray-900 bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none py-1 w-full mr-2 cursor-text font-medium">`}
                             </div>
-                            
                             <div class="space-y-3 overflow-y-auto flex-1 pb-2 min-h-[50px] transition-colors" data-cards-zone="true">
                                 ${cardsHtml}
                             </div>
-                            
                             <div id="inline-card-input-container-${col.id}" class="hidden mb-2">
                                 <input type="text" id="inline-card-input-${col.id}" placeholder="Nom de la carte..." 
                                        onkeydown="window.handleInlineCardKeyDown(event, ${col.id})"
                                        onblur="window.saveInlineCard(${col.id})"
                                        class="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:border-gray-400 text-gray-900">
                             </div>
-
                             <button id="inline-card-btn-${col.id}" onclick="window.showInlineCardInput(${col.id})" class="text-left text-xs text-gray-400 hover:text-gray-900 pt-2 border-t border-gray-50 mt-auto cursor-pointer transition-colors">+ Ajouter une carte</button>
                         </div>
                     `);
@@ -648,11 +664,7 @@
                 const text = input.value.trim();
                 window.hideInlineCardInput(colId);
                 if (!text) return;
-
-                const colCards = localCartes.filter(c => c.colonne_id === colId);
-                const nextPos = colCards.length;
-
-                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text, position: nextPos, notes: '' }]);
+                await supabase.from('kanban_cartes').insert([{ colonne_id: colId, contenu: text, position: localCartes.filter(c => c.colonne_id === colId).length, notes: '' }]);
                 fetchAndRenderKanban();
             };
 
@@ -664,8 +676,7 @@
             };
 
             window.createInitialInlineColumn = async function() {
-                const nextPos = localColonnes.length;
-                const { data, error } = await supabase.from('kanban_colonnes').insert([{ titre: 'Nouvelle Colonne', position: nextPos }]).select();
+                const { data, error } = await supabase.from('kanban_colonnes').insert([{ titre: 'Nouvelle Colonne', position: localColonnes.length }]).select();
                 if (!error && data && data[0]) {
                     await fetchAndRenderKanban();
                     const inputs = document.querySelectorAll('[data-col-id] input');
@@ -677,25 +688,21 @@
                 }
             };
 
-            // Double clic global délégué pour l'ouverture de la carte
+            // DÉLÉGATION ROBUSTE ET FIXE DU DOUBLE CLIC SUR LES CARTES
             document.addEventListener('dblclick', (e) => {
                 const cardEl = e.target.closest('.kanban-card');
                 if (cardEl) {
                     const cardId = cardEl.getAttribute('data-card-id');
-                    if (cardId) {
-                        window.openKanbanCardModal(parseInt(cardId));
-                    }
+                    if (cardId) window.openKanbanCardModal(parseInt(cardId));
                 }
             });
 
-            // DRAG ACTIONS EXPOSÉES
             window.handleColumnDragStart = function(e) {
                 const colEl = e.target.closest('[data-col-id]');
                 draggedColumnId = colEl.getAttribute('data-col-id');
                 colEl.classList.add('opacity-40');
-                
-                const trashZone = document.getElementById('kanban-column-trash-zone');
                 if (draggedColumnId != 1) {
+                    const trashZone = document.getElementById('kanban-column-trash-zone');
                     trashZone.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     trashZone.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 }
@@ -711,7 +718,6 @@
                 const cardEl = e.target.closest('[data-card-id]');
                 draggedCardId = cardEl.getAttribute('data-card-id');
                 cardEl.classList.add('kanban-ghost');
-                
                 const trashZone = document.getElementById('kanban-column-trash-zone');
                 trashZone.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 trashZone.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
@@ -748,7 +754,6 @@
             window.handleColumnTrashDrop = async function(e) {
                 e.preventDefault();
                 document.body.classList.remove('trash-active');
-
                 if (draggedCardId) {
                     if (confirm("Voulez-vous supprimer cette carte ?")) {
                         await supabase.from('kanban_cartes').delete().eq('id', draggedCardId);
@@ -757,7 +762,6 @@
                     }
                     return;
                 }
-
                 if (draggedColumnId && draggedColumnId != 1) {
                     if (confirm("Voulez-vous détruire la colonne et toutes ses cartes ?")) {
                         await supabase.from('kanban_colonnes').delete().eq('id', draggedColumnId);
@@ -783,7 +787,6 @@
             window.handleColDrop = async function(e) {
                 e.preventDefault();
                 const targetColId = e.currentTarget.getAttribute('data-col-id');
-                
                 if (draggedCardId && targetColId) {
                     const targetCard = localCartes.find(c => c.id == draggedCardId);
                     if (targetCard && targetCard.colonne_id != targetColId) {
@@ -792,7 +795,6 @@
                     }
                     draggedCardId = null;
                 }
-                
                 if (draggedColumnId && targetColId && draggedColumnId != targetColId) {
                     const colSource = localColonnes.find(c => c.id == draggedColumnId);
                     const colTarget = localColonnes.find(c => c.id == targetColId);
@@ -818,7 +820,7 @@
                 fetchAndRenderKanban();
             };
 
-            // MODALE DÉTAILS CARTE
+            // MODALE DÉTAILS
             const cardModal = document.getElementById('kanban-card-modal');
             const modalCardTitleInput = document.getElementById('modal-card-title-input');
             const modalNotesTextarea = document.getElementById('modal-card-notes-textarea');
